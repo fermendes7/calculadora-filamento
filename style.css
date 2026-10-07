@@ -13,7 +13,14 @@ h1 { font-size: clamp(2.1rem, 6vw, 3.5rem); letter-spacing: -.055em; line-height
 .section-heading h2 { color: #17202a; font-size: 1.6rem; letter-spacing: -.04em; margin: -4px 0 0; }
 .section-heading .eyebrow { margin-bottom: 8px; }
 .fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-.piece-fields { grid-template-columns: repeat(3, 1fr); }
+.piece-fields { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 180px; }
+.piece-fields .secondary-field { align-self: start; font-size: .72rem; grid-column: 3; }
+.piece-fields .secondary-field:first-of-type { grid-row: 1; }
+.piece-fields .secondary-field:last-of-type { grid-row: 2; }
+.piece-fields .secondary-field .input-with-prefix, .piece-fields .secondary-field .input-with-suffix { padding: 9px 11px; }
+.piece-fields .secondary-field input { font-size: .95rem; }
+.piece-fields .main-field { font-size: .95rem; }
+.piece-fields .main-field input { font-size: 1.25rem; }
 label { color: #3d4a5c; display: grid; gap: 9px; font-size: .88rem; font-weight: 700; }
 input { border: 0; color: #17202a; font: inherit; font-size: 1.1rem; font-weight: 700; min-width: 0; outline: 0; width: 100%; }
 .input-with-prefix, .input-with-suffix { align-items: center; background: #f4f6fa; border: 1px solid #e3e8f0; border-radius: 12px; display: flex; gap: 8px; padding: 13px 14px; transition: border .2s, box-shadow .2s; }
@@ -36,4 +43,4 @@ input { border: 0; color: #17202a; font: inherit; font-size: 1.1rem; font-weight
 h2 { font-size: 1rem; margin: 0 0 9px; }
 .tips p { color: #657184; font-size: .9rem; line-height: 1.55; margin: 7px 0; }
 .tips .note { color: #3867d6; }
-@media (max-width: 620px) { .page-shell { padding-top: 36px; } .fields, .piece-fields { grid-template-columns: 1fr; gap: 14px; } .result { align-items: start; flex-direction: column; gap: 22px; } .unit-cost { text-align: left; } .section-heading { gap: 12px; } .section-heading h2 { font-size: 1.35rem; } .breakdown { grid-template-columns: 1fr; } }
+@media (max-width: 620px) { .page-shell { padding-top: 36px; } .fields, .piece-fields { grid-template-columns: 1fr; gap: 14px; } .piece-fields .secondary-field { grid-column: auto; grid-row: auto; } .result { align-items: start; flex-direction: column; gap: 22px; } .unit-cost { text-align: left; } .section-heading { gap: 12px; } .section-heading h2 { font-size: 1.35rem; } .breakdown { grid-template-columns: 1fr; } }
