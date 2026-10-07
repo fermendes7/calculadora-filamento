@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculadora de Filamento</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="page-shell">
+    <section class="hero">
+      <p class="eyebrow">OFICINA 3D</p>
+      <h1>Calculadora de filamento</h1>
+      <p class="subtitle">Descubra quanto custa cada peça com base no preço e no peso do rolo.</p>
+    </section>
+
+    <section class="calculator-card" aria-label="Calculadora de filamento">
+      <div class="fields">
+        <label>
+          Preço pago pelo rolo
+          <div class="input-with-prefix"><span>R$</span><input id="price" type="number" min="0" step="0.01" value="100" inputmode="decimal" /></div>
+        </label>
+        <label>
+          Peso total do rolo
+          <div class="input-with-suffix"><input id="rollWeight" type="number" min="1" step="1" value="1000" inputmode="numeric" /><span>g</span></div>
+        </label>
+        <label>
+          Quantidade usada na peça
+          <div class="input-with-suffix"><input id="usedWeight" type="number" min="0" step="0.1" value="20" inputmode="decimal" /><span>g</span></div>
+        </label>
+      </div>
+
+      <div class="result" aria-live="polite">
+        <div>
+          <span class="result-label">Custo do filamento</span>
+          <strong id="cost">R$ 2,00</strong>
+        </div>
+        <div class="unit-cost"><span>Custo por grama</span><b id="unitCost">R$ 0,10/g</b></div>
+      </div>
+
+      <div class="formula" id="formula">R$ 100,00 ÷ 1.000 g × 20 g</div>
+    </section>
+
+    <section class="tips">
+      <h2>Como usar</h2>
+      <p>Informe o preço pago e o peso indicado na embalagem. Depois, coloque quantas gramas a peça consumiu.</p>
+      <p class="note">Dica: use o peso real informado pelo fatiador, incluindo ou não o suporte conforme sua necessidade.</p>
+    </section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
