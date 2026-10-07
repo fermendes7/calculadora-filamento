@@ -15,6 +15,8 @@ const breakdownEnergy = document.querySelector('#breakdownEnergy');
 const breakdownLabor = document.querySelector('#breakdownLabor');
 const pieceTotal = document.querySelector('#pieceTotal');
 const pieceFormula = document.querySelector('#pieceFormula');
+const calculateFilamentButton = document.querySelector('#calculateFilament');
+const calculatePieceButton = document.querySelector('#calculatePiece');
 
 const money = value => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 const number = value => value.toLocaleString('pt-BR', { maximumFractionDigits: 1 });
@@ -32,7 +34,7 @@ function calculate() {
   calculatePiece();
 }
 
-[price, rollWeight, usedWeight].forEach(input => input.addEventListener('input', calculate));
+calculateFilamentButton.addEventListener('click', calculate);
 
 function calculatePiece() {
   const filament = Number(pieceFilament.value) || 0;
@@ -48,5 +50,5 @@ function calculatePiece() {
   pieceFormula.textContent = `${money(filament)} + (${number(power)} kW × ${number(hours)} h × ${money(rate)}) + ${money(labor)}`;
 }
 
-[pieceFilament, printerPower, energyRate, printHours, pieceGrams, laborCost].forEach(input => input.addEventListener('input', calculatePiece));
+calculatePieceButton.addEventListener('click', calculatePiece);
 calculate();

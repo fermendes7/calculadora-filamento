@@ -12,7 +12,6 @@ h1 { font-size: clamp(2.1rem, 6vw, 3.5rem); letter-spacing: -.055em; line-height
 .section-heading { align-items: start; display: flex; justify-content: space-between; margin-bottom: 22px; }
 .section-heading h2 { color: #17202a; font-size: 1.6rem; letter-spacing: -.04em; margin: -4px 0 0; }
 .section-heading .eyebrow { margin-bottom: 8px; }
-.badge { background: #e9f7ef; border-radius: 999px; color: #247448; font-size: .75rem; font-weight: 800; padding: 8px 12px; }
 .fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
 .piece-fields { grid-template-columns: repeat(3, 1fr); }
 label { color: #3d4a5c; display: grid; gap: 9px; font-size: .88rem; font-weight: 700; }
@@ -31,6 +30,8 @@ input { border: 0; color: #17202a; font: inherit; font-size: 1.1rem; font-weight
 .breakdown span { color: #718096; font-size: .8rem; }
 .breakdown b { color: #334155; font-size: 1rem; }
 .total-result { margin-top: 20px; }
+.calculate-button { background: #3867d6; border: 0; border-radius: 12px; color: white; cursor: pointer; display: block; font: inherit; font-weight: 800; margin: 22px auto 0; padding: 13px 20px; transition: background .2s, transform .2s; }
+.calculate-button:hover { background: #2f56b5; transform: translateY(-1px); }
 .tips { box-shadow: none; margin-top: 18px; padding: 24px 28px; }
 h2 { font-size: 1rem; margin: 0 0 9px; }
 .tips p { color: #657184; font-size: .9rem; line-height: 1.55; margin: 7px 0; }
