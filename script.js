@@ -13,6 +13,15 @@ const pieceTotal = document.querySelector('#pieceTotal');
 const pieceFormula = document.querySelector('#pieceFormula');
 const calculateFilamentButton = document.querySelector('#calculateFilament');
 const calculatePieceButton = document.querySelector('#calculatePiece');
+const packagingCost = document.querySelector('#packagingCost');
+const otherCosts = document.querySelector('#otherCosts');
+const machineCostPerHour = document.querySelector('#machineCostPerHour');
+const extraPackaging = document.querySelector('#extraPackaging');
+const extraOtherCosts = document.querySelector('#extraOtherCosts');
+const extraMachine = document.querySelector('#extraMachine');
+const finalPrice = document.querySelector('#finalPrice');
+const extraFormula = document.querySelector('#extraFormula');
+const calculateExtraButton = document.querySelector('#calculateExtra');
 
 const money = value => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 const number = value => value.toLocaleString('pt-BR', { maximumFractionDigits: 1 });
@@ -52,4 +61,27 @@ function calculatePiece() {
 }
 
 calculatePieceButton.addEventListener('click', calculatePiece);
+
+function calculateExtra() {
+  const paid = Number(price.value) || 0;
+  const grams = Number(usedWeight.value) || 0;
+  const filament = (paid / 1000) * grams;
+  const power = 0.14;
+  const rate = 0.85;
+  const hours = Number(printHours.value) || 0;
+  const minutes = Math.min(59, Math.max(0, Number(printMinutes.value) || 0));
+  const labor = Number(laborCost.value) || 0;
+  const pieceTotalValue = filament + (power * (hours + minutes / 60) * rate) + labor;
+  const packaging = Number(packagingCost.value) || 0;
+  const others = Number(otherCosts.value) || 0;
+  const machine = Number(machineCostPerHour.value) * (hours + minutes / 60) || 0;
+  extraPackaging.textContent = money(packaging);
+  extraOtherCosts.textContent = money(others);
+  extraMachine.textContent = money(machine);
+  finalPrice.textContent = money(pieceTotalValue + packaging + others + machine);
+  extraFormula.textContent = `${money(pieceTotalValue)} + ${money(packaging)} + ${money(others)} + ${money(machine)}`;
+}
+
+calculateExtraButton.addEventListener('click', calculateExtra);
 calculate();
+calculateExtra();
