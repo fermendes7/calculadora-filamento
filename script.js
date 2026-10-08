@@ -3,8 +3,6 @@ const usedWeight = document.querySelector('#usedWeight');
 const cost = document.querySelector('#cost');
 const unitCost = document.querySelector('#unitCost');
 const formula = document.querySelector('#formula');
-const printerPower = document.querySelector('#printerPower');
-const energyRate = document.querySelector('#energyRate');
 const printHours = document.querySelector('#printHours');
 const printMinutes = document.querySelector('#printMinutes');
 const laborCost = document.querySelector('#laborCost');
@@ -33,12 +31,14 @@ function calculate() {
 calculateFilamentButton.addEventListener('click', calculate);
 
 function calculatePiece() {
+  const printerPower = 0.14;
+  const energyRate = 0.85;
   const paid = Number(price.value) || 0;
   const total = 1000;
   const grams = Number(usedWeight.value) || 0;
   const filament = total > 0 ? (paid / total) * grams : 0;
-  const power = Number(printerPower.value) || 0;
-  const rate = Number(energyRate.value) || 0;
+  const power = printerPower;
+  const rate = energyRate;
   const hours = Number(printHours.value) || 0;
   const minutes = Math.min(59, Math.max(0, Number(printMinutes.value) || 0));
   const labor = Number(laborCost.value) || 0;
