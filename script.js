@@ -1,5 +1,4 @@
 const price = document.querySelector('#price');
-const rollWeight = document.querySelector('#rollWeight');
 const usedWeight = document.querySelector('#usedWeight');
 const cost = document.querySelector('#cost');
 const unitCost = document.querySelector('#unitCost');
@@ -22,7 +21,7 @@ const number = value => value.toLocaleString('pt-BR', { maximumFractionDigits: 1
 
 function calculate() {
   const paid = Number(price.value) || 0;
-  const total = Number(rollWeight.value) || 0;
+  const total = 1000;
   const grams = Number(usedWeight.value) || 0;
   const perGram = total > 0 ? paid / total : 0;
   cost.textContent = money(perGram * grams);
