@@ -34,7 +34,7 @@ calculateFilamentButton.addEventListener('click', calculate);
 
 function calculatePiece() {
   const paid = Number(price.value) || 0;
-  const total = Number(rollWeight.value) || 0;
+  const total = 1000;
   const grams = Number(usedWeight.value) || 0;
   const filament = total > 0 ? (paid / total) * grams : 0;
   const power = Number(printerPower.value) || 0;
