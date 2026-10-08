@@ -15,6 +15,8 @@ h1 { font-size: clamp(2.1rem, 6vw, 3.5rem); letter-spacing: -.055em; line-height
 .fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
 .piece-fields { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 180px; }
 .piece-fields .secondary-field { align-self: start; font-size: .72rem; grid-column: span 1; grid-row: 2; }
+.piece-fields .energy-field { grid-column: 1; }
+.piece-fields .power-field { grid-column: 2; }
 .piece-fields .secondary-field .input-with-prefix, .piece-fields .secondary-field .input-with-suffix { padding: 9px 11px; }
 .piece-fields .secondary-field input { font-size: .95rem; }
 .piece-fields .main-field { font-size: .95rem; }
