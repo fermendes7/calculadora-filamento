@@ -102,11 +102,13 @@ function calculateProfit() {
   const shipping = Number(shippingCost.value) || 0;
   const baseCost = pieceCost + packaging + others + machine + shipping;
   const percent = Number(profitPercent.value) || 0;
-  const profit = baseCost * (percent / 100);
+  const feeRate = Math.min(99.99, Math.max(0, percent)) / 100;
+  const sale = feeRate < 1 ? baseCost / (1 - feeRate) : baseCost;
+  const fee = sale * feeRate;
   profitBaseCost.textContent = money(baseCost);
-  profitValue.textContent = money(profit);
-  salePrice.textContent = money(baseCost + profit);
-  profitFormula.textContent = `${money(baseCost)} + ${number(percent)}% de lucro = ${money(baseCost + profit)}`;
+  profitValue.textContent = money(fee);
+  salePrice.textContent = money(sale);
+  profitFormula.textContent = `${money(baseCost)} ÷ (1 − ${number(percent)}% de taxa) = ${money(sale)}`;
 }
 
 priceType.addEventListener('change', () => {
