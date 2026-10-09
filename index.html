@@ -103,12 +103,47 @@
       <button class="calculate-button" id="calculateExtra" type="button">Calcular outros custos</button>
     </section>
 
+    <section class="calculator-card profit-card" aria-label="Calculadora de porcentagem de lucro">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">PRECIFICAÇÃO</p>
+          <h2>Porcentagem de lucro</h2>
+        </div>
+      </div>
+      <div class="fields profit-fields">
+        <label>
+          Tipo de preço
+          <select id="priceType">
+            <option value="familia" data-profit="0">Preço família</option>
+            <option value="promocao" data-profit="20">Promoção</option>
+            <option value="site" data-profit="50">Site próprio</option>
+            <option value="shopee" data-profit="70">Shopee</option>
+            <option value="mercado-livre" data-profit="80">Mercado Livre</option>
+            <option value="tiktok" data-profit="70">TikTok</option>
+          </select>
+        </label>
+        <label>
+          Porcentagem de lucro
+          <div class="input-with-suffix"><input id="profitPercent" type="number" min="0" step="1" value="0" inputmode="decimal" /><span>%</span></div>
+        </label>
+      </div>
+      <div class="breakdown profit-breakdown" aria-live="polite">
+        <div><span>Custo final da peça</span><b id="profitBaseCost">R$ 2,14</b></div>
+        <div><span>Lucro</span><b id="profitValue">R$ 0,00</b></div>
+      </div>
+      <div class="result total-result" aria-live="polite">
+        <div><span class="result-label">Preço de venda sugerido</span><strong id="salePrice">R$ 2,14</strong></div>
+      </div>
+      <div class="formula" id="profitFormula">R$ 2,14 + 0% de lucro</div>
+      <button class="calculate-button" id="calculateProfit" type="button">Calcular preço de venda</button>
+    </section>
+
     <section class="tips">
       <h2>Como usar</h2>
       <p>A segunda calculadora aproveita o valor e as gramas da primeira, mas todos os campos continuam editáveis. Informe horas e minutos para calcular o tempo exato da impressão.</p>
       <p class="note">Parâmetros padrão de energia: Bambu Lab A1 com potência estimada de 0,14 kW e tarifa de Curitiba de R$ 0,85/kWh.</p>
     </section>
   </main>
-  <script src="script.js?v=14"></script>
+  <script src="script.js?v=15"></script>
 </body>
 </html>

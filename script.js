@@ -22,6 +22,13 @@ const extraMachine = document.querySelector('#extraMachine');
 const finalPrice = document.querySelector('#finalPrice');
 const extraFormula = document.querySelector('#extraFormula');
 const calculateExtraButton = document.querySelector('#calculateExtra');
+const priceType = document.querySelector('#priceType');
+const profitPercent = document.querySelector('#profitPercent');
+const profitBaseCost = document.querySelector('#profitBaseCost');
+const profitValue = document.querySelector('#profitValue');
+const salePrice = document.querySelector('#salePrice');
+const profitFormula = document.querySelector('#profitFormula');
+const calculateProfitButton = document.querySelector('#calculateProfit');
 
 const money = value => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 const number = value => value.toLocaleString('pt-BR', { maximumFractionDigits: 1 });
@@ -83,5 +90,28 @@ function calculateExtra() {
 }
 
 calculateExtraButton.addEventListener('click', calculateExtra);
+
+function calculateProfit() {
+  const paid = Number(price.value) || 0;
+  const grams = Number(usedWeight.value) || 0;
+  const pieceCost = (paid / 1000) * grams + (0.14 * ((Number(printHours.value) || 0) + (Math.min(59, Math.max(0, Number(printMinutes.value) || 0)) / 60)) * 0.85) + (Number(laborCost.value) || 0);
+  const packaging = Number(packagingCost.value) || 0;
+  const others = Number(otherCosts.value) || 0;
+  const machine = Number(machineCostPerHour.value) * ((Number(printHours.value) || 0) + (Math.min(59, Math.max(0, Number(printMinutes.value) || 0)) / 60)) || 0;
+  const baseCost = pieceCost + packaging + others + machine;
+  const percent = Number(profitPercent.value) || 0;
+  const profit = baseCost * (percent / 100);
+  profitBaseCost.textContent = money(baseCost);
+  profitValue.textContent = money(profit);
+  salePrice.textContent = money(baseCost + profit);
+  profitFormula.textContent = `${money(baseCost)} + ${number(percent)}% de lucro = ${money(baseCost + profit)}`;
+}
+
+priceType.addEventListener('change', () => {
+  const selected = priceType.options[priceType.selectedIndex];
+  profitPercent.value = selected.dataset.profit;
+});
+calculateProfitButton.addEventListener('click', calculateProfit);
 calculate();
 calculateExtra();
+calculateProfit();
