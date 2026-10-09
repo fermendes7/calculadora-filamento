@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Calculadora de Filamento</title>
-  <link rel="stylesheet" href="style.css?v=15" />
+  <link rel="stylesheet" href="style.css?v=16" />
 </head>
 <body>
   <main class="page-shell">
@@ -106,48 +106,56 @@
     <section class="calculator-card profit-card" aria-label="Calculadora de taxas e preço de venda">
       <div class="section-heading">
         <div>
-          <p class="eyebrow">TAXAS E PRECIFICAÇÃO</p>
-          <h2>Taxas de venda</h2>
+          <p class="eyebrow">SIMULADOR DE VENDA</p>
+          <h2>Preço para cada canal</h2>
         </div>
       </div>
       <div class="fields profit-fields">
         <label>
-          Tipo de preço
+          Canal de venda
           <select id="priceType">
-            <option value="familia" data-profit="0">Preço família</option>
-            <option value="promocao" data-profit="20">Promoção</option>
-            <option value="site" data-profit="50">Site próprio</option>
-            <option value="shopee" data-profit="70">Shopee</option>
-            <option value="mercado-livre" data-profit="80">Mercado Livre</option>
-            <option value="tiktok" data-profit="70">TikTok</option>
+            <option value="familia" data-rate="0" data-fixed="0">Preço família</option>
+            <option value="promocao" data-rate="0" data-fixed="0">Promoção</option>
+            <option value="site" data-rate="4.99" data-fixed="0">Site próprio (pagamento)</option>
+            <option value="shopee" data-rate="20" data-fixed="4.5">Shopee (até R$ 79,99)</option>
+            <option value="mercado-livre" data-rate="12" data-fixed="0">Mercado Livre (Clássico)</option>
+            <option value="tiktok" data-rate="10" data-fixed="4">TikTok (até R$ 49,99)</option>
           </select>
         </label>
         <label>
-          Taxa da plataforma
+          Comissão / taxa percentual
           <div class="input-with-suffix"><input id="profitPercent" type="number" min="0" max="99.99" step="0.01" value="0" inputmode="decimal" /><span>%</span></div>
         </label>
         <label>
-          Frete
+          Taxa fixa por pedido
+          <div class="input-with-prefix"><span>R$</span><input id="fixedFee" type="number" min="0" step="0.01" value="0" inputmode="decimal" /></div>
+        </label>
+        <label>
+          Frete / etiqueta
           <div class="input-with-prefix"><span>R$</span><input id="shippingCost" type="number" min="0" step="0.01" value="0" inputmode="decimal" /></div>
+        </label>
+        <label>
+          Desconto aplicado
+          <div class="input-with-suffix"><input id="discountPercent" type="number" min="0" max="99.99" step="0.01" value="0" inputmode="decimal" /><span>%</span></div>
         </label>
       </div>
       <div class="breakdown profit-breakdown" aria-live="polite">
-        <div><span>Custo + frete</span><b id="profitBaseCost">R$ 2,14</b></div>
-        <div><span>Taxa da plataforma</span><b id="profitValue">R$ 0,00</b></div>
+        <div><span>Custo base</span><b id="profitBaseCost">R$ 2,14</b></div>
+        <div><span>Taxas estimadas</span><b id="profitValue">R$ 0,00</b></div>
       </div>
       <div class="result total-result" aria-live="polite">
         <div><span class="result-label">Preço de venda sugerido</span><strong id="salePrice">R$ 2,14</strong></div>
       </div>
-      <div class="formula" id="profitFormula">Custo + frete ÷ (1 − taxa)</div>
+      <div class="formula" id="profitFormula">Preço sugerido = custos ÷ (1 − comissões − desconto)</div>
       <button class="calculate-button" id="calculateProfit" type="button">Calcular preço de venda</button>
     </section>
 
     <section class="tips">
       <h2>Como usar</h2>
       <p>A segunda calculadora aproveita o valor e as gramas da primeira, mas todos os campos continuam editáveis. Informe horas e minutos para calcular o tempo exato da impressão.</p>
-      <p class="note">Parâmetros padrão de energia: Bambu Lab A1 com potência estimada de 0,14 kW e tarifa de Curitiba de R$ 0,85/kWh.</p>
+      <p class="note">Padrões de energia: Bambu Lab A1 (0,14 kW) e Curitiba (R$ 0,85/kWh). As taxas dos canais são estimativas editáveis: variam por categoria, anúncio, campanha, logística e conta. Confirme no painel do canal antes de publicar.</p>
     </section>
   </main>
-  <script src="script.js?v=16"></script>
+  <script src="script.js?v=17"></script>
 </body>
 </html>

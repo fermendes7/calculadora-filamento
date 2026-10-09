@@ -30,6 +30,8 @@ const salePrice = document.querySelector('#salePrice');
 const profitFormula = document.querySelector('#profitFormula');
 const calculateProfitButton = document.querySelector('#calculateProfit');
 const shippingCost = document.querySelector('#shippingCost');
+const fixedFee = document.querySelector('#fixedFee');
+const discountPercent = document.querySelector('#discountPercent');
 
 const money = value => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 const number = value => value.toLocaleString('pt-BR', { maximumFractionDigits: 1 });
@@ -100,20 +102,25 @@ function calculateProfit() {
   const others = Number(otherCosts.value) || 0;
   const machine = Number(machineCostPerHour.value) * ((Number(printHours.value) || 0) + (Math.min(59, Math.max(0, Number(printMinutes.value) || 0)) / 60)) || 0;
   const shipping = Number(shippingCost.value) || 0;
-  const baseCost = pieceCost + packaging + others + machine + shipping;
+  const fixed = Number(fixedFee.value) || 0;
+  const baseCost = pieceCost + packaging + others + machine + shipping + fixed;
   const percent = Number(profitPercent.value) || 0;
+  const discount = Number(discountPercent.value) || 0;
   const feeRate = Math.min(99.99, Math.max(0, percent)) / 100;
-  const sale = feeRate < 1 ? baseCost / (1 - feeRate) : baseCost;
-  const fee = sale * feeRate;
+  const discountRate = Math.min(99.99, Math.max(0, discount)) / 100;
+  const divisor = Math.max(0.0001, 1 - feeRate - discountRate);
+  const sale = baseCost / divisor;
+  const fee = sale * feeRate + sale * discountRate;
   profitBaseCost.textContent = money(baseCost);
   profitValue.textContent = money(fee);
   salePrice.textContent = money(sale);
-  profitFormula.textContent = `${money(baseCost)} ÷ (1 − ${number(percent)}% de taxa) = ${money(sale)}`;
+  profitFormula.textContent = `${money(baseCost)} ÷ (1 − ${number(percent)}% comissão − ${number(discount)}% desconto) = ${money(sale)}`;
 }
 
 priceType.addEventListener('change', () => {
   const selected = priceType.options[priceType.selectedIndex];
-  profitPercent.value = selected.dataset.profit;
+  profitPercent.value = selected.dataset.rate;
+  fixedFee.value = selected.dataset.fixed;
 });
 calculateProfitButton.addEventListener('click', calculateProfit);
 calculate();
