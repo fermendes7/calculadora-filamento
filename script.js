@@ -121,6 +121,7 @@ priceType.addEventListener('change', () => {
   const selected = priceType.options[priceType.selectedIndex];
   profitPercent.value = selected.dataset.rate;
   fixedFee.value = selected.dataset.fixed;
+  discountPercent.value = selected.dataset.discount;
 });
 calculateProfitButton.addEventListener('click', calculateProfit);
 calculate();
