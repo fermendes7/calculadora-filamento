@@ -12,7 +12,7 @@ h1 { font-size: clamp(2.1rem, 6vw, 3.5rem); letter-spacing: -.055em; line-height
 .extra-card { margin-top: 22px; }
 .profit-card { margin-top: 22px; }
 select { appearance: none; background: #f4f6fa; border: 1px solid #e3e8f0; border-radius: 12px; color: #17202a; font: inherit; font-size: 1.05rem; font-weight: 700; padding: 14px; width: 100%; }
-.profit-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.profit-fields { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .profit-breakdown { grid-template-columns: repeat(2, 1fr); }
 .section-heading { align-items: start; display: flex; justify-content: space-between; margin-bottom: 22px; }
 .section-heading h2 { color: #17202a; font-size: 1.6rem; letter-spacing: -.04em; margin: -4px 0 0; }

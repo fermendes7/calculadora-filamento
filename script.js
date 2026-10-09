@@ -29,6 +29,7 @@ const profitValue = document.querySelector('#profitValue');
 const salePrice = document.querySelector('#salePrice');
 const profitFormula = document.querySelector('#profitFormula');
 const calculateProfitButton = document.querySelector('#calculateProfit');
+const shippingCost = document.querySelector('#shippingCost');
 
 const money = value => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 const number = value => value.toLocaleString('pt-BR', { maximumFractionDigits: 1 });
@@ -98,7 +99,8 @@ function calculateProfit() {
   const packaging = Number(packagingCost.value) || 0;
   const others = Number(otherCosts.value) || 0;
   const machine = Number(machineCostPerHour.value) * ((Number(printHours.value) || 0) + (Math.min(59, Math.max(0, Number(printMinutes.value) || 0)) / 60)) || 0;
-  const baseCost = pieceCost + packaging + others + machine;
+  const shipping = Number(shippingCost.value) || 0;
+  const baseCost = pieceCost + packaging + others + machine + shipping;
   const percent = Number(profitPercent.value) || 0;
   const profit = baseCost * (percent / 100);
   profitBaseCost.textContent = money(baseCost);
