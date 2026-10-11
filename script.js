@@ -17,6 +17,7 @@ const packagingCost = document.querySelector('#packagingCost');
 const otherCosts = document.querySelector('#otherCosts');
 const machineCostPerHour = document.querySelector('#machineCostPerHour');
 const extraPackaging = document.querySelector('#extraPackaging');
+const extraLabor = document.querySelector('#extraLabor');
 const extraOtherCosts = document.querySelector('#extraOtherCosts');
 const extraMachine = document.querySelector('#extraMachine');
 const finalPrice = document.querySelector('#finalPrice');
@@ -82,10 +83,11 @@ function calculateExtra() {
   const others = Number(otherCosts.value) || 0;
   const machine = Number(machineCostPerHour.value) * (hours + minutes / 60) || 0;
   extraPackaging.textContent = money(packaging);
+  extraLabor.textContent = money(labor);
   extraOtherCosts.textContent = money(others);
   extraMachine.textContent = money(machine);
   finalPrice.textContent = money(pieceTotalValue + packaging + others + machine);
-  extraFormula.textContent = `${money(pieceTotalValue)} + ${money(packaging)} + ${money(others)} + ${money(machine)}`;
+  extraFormula.textContent = `${money(pieceTotalValue)} (inclui ${money(labor)} de mão de obra) + ${money(packaging)} + ${money(others)} + ${money(machine)}`;
 }
 
 function calculateProfit() {
