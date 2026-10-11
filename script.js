@@ -47,8 +47,6 @@ function calculate() {
   calculatePiece();
 }
 
-calculateFilamentButton.addEventListener('click', calculate);
-
 function calculatePiece() {
   const printerPower = 0.14;
   const energyRate = 0.85;
@@ -70,8 +68,6 @@ function calculatePiece() {
   pieceFormula.textContent = `${money(filament)} + (${number(power)} kW × ${number(hours)} h ${number(minutes)} min × ${money(rate)}) + ${money(labor)}`;
 }
 
-calculatePieceButton.addEventListener('click', calculatePiece);
-
 function calculateExtra() {
   const paid = Number(price.value) || 0;
   const grams = Number(usedWeight.value) || 0;
@@ -92,8 +88,6 @@ function calculateExtra() {
   extraFormula.textContent = `${money(pieceTotalValue)} + ${money(packaging)} + ${money(others)} + ${money(machine)}`;
 }
 
-calculateExtraButton.addEventListener('click', calculateExtra);
-
 function calculateProfit() {
   const paid = Number(price.value) || 0;
   const grams = Number(usedWeight.value) || 0;
@@ -103,27 +97,39 @@ function calculateProfit() {
   const machine = Number(machineCostPerHour.value) * ((Number(printHours.value) || 0) + (Math.min(59, Math.max(0, Number(printMinutes.value) || 0)) / 60)) || 0;
   const shipping = Number(shippingCost.value) || 0;
   const fixed = Number(fixedFee.value) || 0;
-  const baseCost = pieceCost + packaging + others + machine + shipping + fixed;
+  const baseCost = pieceCost + packaging + others + machine + shipping;
   const percent = Number(profitPercent.value) || 0;
   const discount = Number(discountPercent.value) || 0;
   const feeRate = Math.min(99.99, Math.max(0, percent)) / 100;
   const discountRate = Math.min(99.99, Math.max(0, discount)) / 100;
   const divisor = Math.max(0.0001, 1 - feeRate - discountRate);
-  const sale = baseCost / divisor;
-  const fee = sale * feeRate + sale * discountRate;
+  const sale = (baseCost + fixed) / divisor;
+  const fee = sale * feeRate + sale * discountRate + fixed;
   profitBaseCost.textContent = money(baseCost);
   profitValue.textContent = money(fee);
   salePrice.textContent = money(sale);
-  profitFormula.textContent = `${money(baseCost)} ÷ (1 − ${number(percent)}% comissão − ${number(discount)}% desconto) = ${money(sale)}`;
+  profitFormula.textContent = `(${money(baseCost)} + ${money(fixed)}) ÷ (1 − ${number(percent)}% comissão − ${number(discount)}% desconto) = ${money(sale)}`;
 }
+
+function updateAll() {
+  calculate();
+  calculateExtra();
+  calculateProfit();
+}
+
+calculateFilamentButton.addEventListener('click', updateAll);
+calculatePieceButton.addEventListener('click', updateAll);
+calculateExtraButton.addEventListener('click', updateAll);
+calculateProfitButton.addEventListener('click', updateAll);
+
+const allInputs = document.querySelectorAll('input');
+allInputs.forEach(input => input.addEventListener('input', updateAll));
 
 priceType.addEventListener('change', () => {
   const selected = priceType.options[priceType.selectedIndex];
   profitPercent.value = selected.dataset.rate;
   fixedFee.value = selected.dataset.fixed;
   discountPercent.value = selected.dataset.discount;
+  updateAll();
 });
-calculateProfitButton.addEventListener('click', calculateProfit);
-calculate();
-calculateExtra();
-calculateProfit();
+updateAll();
