@@ -14,7 +14,6 @@ const pieceFormula = document.querySelector('#pieceFormula');
 const calculateFilamentButton = document.querySelector('#calculateFilament');
 const calculatePieceButton = document.querySelector('#calculatePiece');
 const packagingCost = document.querySelector('#packagingCost');
-const extraLaborCost = document.querySelector('#extraLaborCost');
 const otherCosts = document.querySelector('#otherCosts');
 const machineCostPerHour = document.querySelector('#machineCostPerHour');
 const extraPackaging = document.querySelector('#extraPackaging');
@@ -28,6 +27,9 @@ const priceType = document.querySelector('#priceType');
 const profitPercent = document.querySelector('#profitPercent');
 const profitBaseCost = document.querySelector('#profitBaseCost');
 const profitValue = document.querySelector('#profitValue');
+const salePriceInformed = document.querySelector('#salePriceInformed');
+const profitPerPiece = document.querySelector('#profitPerPiece');
+const salePriceInput = document.querySelector('#salePriceInput');
 const salePrice = document.querySelector('#salePrice');
 const profitFormula = document.querySelector('#profitFormula');
 const calculateProfitButton = document.querySelector('#calculateProfit');
@@ -78,7 +80,7 @@ function calculateExtra() {
   const rate = 0.85;
   const hours = Number(printHours.value) || 0;
   const minutes = Math.min(59, Math.max(0, Number(printMinutes.value) || 0));
-  const labor = Number(extraLaborCost.value) || 0;
+  const labor = Number(laborCost.value) || 0;
   const pieceTotalValue = filament + (power * (hours + minutes / 60) * rate) + labor;
   const packaging = Number(packagingCost.value) || 0;
   const others = Number(otherCosts.value) || 0;
@@ -108,8 +110,13 @@ function calculateProfit() {
   const divisor = Math.max(0.0001, 1 - feeRate - discountRate);
   const sale = (baseCost + fixed) / divisor;
   const fee = sale * feeRate + sale * discountRate + fixed;
+  const informedSale = Number(salePriceInput.value) || 0;
+  const informedFee = informedSale * feeRate + informedSale * discountRate + fixed;
+  const actualProfit = informedSale - baseCost - informedFee;
   profitBaseCost.textContent = money(baseCost);
   profitValue.textContent = money(fee);
+  salePriceInformed.textContent = money(informedSale);
+  profitPerPiece.textContent = money(actualProfit);
   salePrice.textContent = money(sale);
   profitFormula.textContent = `(${money(baseCost)} + ${money(fixed)}) ÷ (1 − ${number(percent)}% comissão − ${number(discount)}% desconto) = ${money(sale)}`;
 }
@@ -127,8 +134,6 @@ calculateProfitButton.addEventListener('click', updateAll);
 
 const allInputs = document.querySelectorAll('input');
 allInputs.forEach(input => input.addEventListener('input', () => {
-  if (input === laborCost) extraLaborCost.value = laborCost.value;
-  if (input === extraLaborCost) laborCost.value = extraLaborCost.value;
   updateAll();
 }));
 
@@ -139,5 +144,4 @@ priceType.addEventListener('change', () => {
   discountPercent.value = selected.dataset.discount;
   updateAll();
 });
-extraLaborCost.value = laborCost.value;
 updateAll();

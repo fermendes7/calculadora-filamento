@@ -79,10 +79,6 @@
       </div>
       <div class="fields extra-fields">
         <label>
-          Mão de obra total
-          <div class="input-with-prefix"><span>R$</span><input id="extraLaborCost" type="number" min="0" step="0.01" value="0" inputmode="decimal" /></div>
-        </label>
-        <label>
           Embalagem total
           <div class="input-with-prefix"><span>R$</span><input id="packagingCost" type="number" min="0" step="0.01" value="0" inputmode="decimal" /></div>
         </label>
@@ -147,9 +143,15 @@
       <div class="breakdown profit-breakdown" aria-live="polite">
         <div><span>Custos + frete</span><b id="profitBaseCost">R$ 2,14</b></div>
         <div><span>Taxas estimadas</span><b id="profitValue">R$ 0,00</b></div>
+        <div><span>Preço de venda informado</span><b id="salePriceInformed">R$ 0,00</b></div>
+        <div><span>Lucro por peça</span><b id="profitPerPiece">R$ 0,00</b></div>
       </div>
+      <label>
+        Preço de venda
+        <div class="input-with-prefix"><span>R$</span><input id="salePriceInput" type="number" min="0" step="0.01" value="0" inputmode="decimal" /></div>
+      </label>
       <div class="result total-result" aria-live="polite">
-        <div><span class="result-label">Preço de venda sugerido</span><strong id="salePrice">R$ 2,14</strong></div>
+        <div><span class="result-label">Preço sugerido</span><strong id="salePrice">R$ 2,14</strong></div>
       </div>
       <div class="formula" id="profitFormula">Preço sugerido = custos ÷ (1 − comissões − desconto)</div>
       <button class="calculate-button" id="calculateProfit" type="button">Calcular preço de venda</button>
@@ -161,6 +163,6 @@
       <p class="note">Padrões de energia: Bambu Lab A1 (0,14 kW) e Curitiba (R$ 0,85/kWh). As taxas dos canais são estimativas editáveis: variam por categoria, anúncio, campanha, logística e conta. Confirme no painel do canal antes de publicar.</p>
     </section>
   </main>
-  <script src="script.js?v=21"></script>
+  <script src="script.js?v=22"></script>
 </body>
 </html>
