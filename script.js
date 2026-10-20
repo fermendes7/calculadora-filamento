@@ -93,7 +93,8 @@ function calculateExtra() {
   const others = Number(otherCosts.value) || 0;
   const machine = Number(machineCostPerHour.value) * (hours + minutes / 60) || 0;
   const errorPercent = Math.min(100, Math.max(0, Number(errorCost.value) || 0));
-  const error = pieceTotalValue * (errorPercent / 100);
+  const totalPieceWithMachine = pieceTotalValue + machine;
+  const error = totalPieceWithMachine * (errorPercent / 100);
   extraPackaging.textContent = money(packaging);
   extraLabor.textContent = money(labor);
   extraOtherCosts.textContent = money(others);
@@ -112,7 +113,8 @@ function calculateProfit() {
   const machine = Number(machineCostPerHour.value) * ((Number(printHours.value) || 0) + (Math.min(59, Math.max(0, Number(printMinutes.value) || 0)) / 60)) || 0;
   const errorPercent = Math.min(100, Math.max(0, Number(errorCost.value) || 0));
   const pieceTotalValue = pieceCost;
-  const error = pieceTotalValue * (errorPercent / 100);
+  const totalPieceWithMachine = pieceTotalValue + machine;
+  const error = totalPieceWithMachine * (errorPercent / 100);
   const shipping = Number(shippingCost.value) || 0;
   const fixed = Number(fixedFee.value) || 0;
   const baseCost = pieceCost + packaging + others + machine + error + shipping;
