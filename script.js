@@ -70,12 +70,13 @@ function calculatePiece() {
   const labor = Number(laborCost.value) || 0;
   const totalHours = hours + minutes / 60;
   const energy = power * totalHours * rate;
+  const machine = (Number(machineCostPerHour.value) || 0) * totalHours;
   breakdownFilament.textContent = money(filament);
   breakdownEnergy.textContent = money(energy);
   breakdownLabor.textContent = money(labor);
   pieceMachine.textContent = money(machineCostPerHour.value * totalHours || 0);
-  pieceTotal.textContent = money(filament + energy + labor);
-  pieceFormula.textContent = `${money(filament)} + (${number(power)} kW × ${number(hours)} h ${number(minutes)} min × ${money(rate)}) + ${money(labor)}`;
+  pieceTotal.textContent = money(filament + energy + labor + machine);
+  pieceFormula.textContent = `${money(filament)} + (${number(power)} kW × ${number(hours)} h ${number(minutes)} min × ${money(rate)}) + ${money(labor)} + (${number(hours)} h ${number(minutes)} min × ${money(Number(machineCostPerHour.value) || 0)} máquina)`;
 }
 
 function calculateExtra() {
