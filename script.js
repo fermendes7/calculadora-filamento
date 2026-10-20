@@ -120,10 +120,10 @@ function calculateProfit() {
   const feeRate = Math.min(99.99, Math.max(0, percent)) / 100;
   const discountRate = Math.min(99.99, Math.max(0, discount)) / 100;
   const requestedProfit = Math.max(0, Number(desiredProfit.value) || 0);
-  const profitRate = pricingMode.value === 'margin' ? Math.min(99.99, requestedProfit) / 100 : 0;
-  const divisor = Math.max(0.0001, 1 - feeRate - discountRate - profitRate);
+  const profitRate = pricingMode.value === 'margin' ? requestedProfit / 100 : 0;
+  const divisor = Math.max(0.0001, 1 - feeRate - discountRate);
   const sale = pricingMode.value === 'margin'
-    ? (baseCost + fixed) / divisor
+    ? ((baseCost + fixed) * (1 + profitRate)) / divisor
     : (baseCost + fixed + requestedProfit) / Math.max(0.0001, 1 - feeRate - discountRate);
   const fee = sale * feeRate + sale * discountRate + fixed;
   const informedSale = Number(salePriceInput.value) || 0;
@@ -136,7 +136,7 @@ function calculateProfit() {
   salePrice.textContent = money(sale);
   desiredProfitSuffix.textContent = pricingMode.value === 'margin' ? '%' : 'R$';
   profitFormula.textContent = pricingMode.value === 'margin'
-    ? `(${money(baseCost)} + ${money(fixed)}) ÷ (1 − ${number(percent)}% comissão − ${number(discount)}% desconto − ${number(requestedProfit)}% lucro) = ${money(sale)}`
+    ? `(${money(baseCost)} + ${money(fixed)}) × (1 + ${number(requestedProfit)}% lucro) ÷ (1 − ${number(percent)}% comissão − ${number(discount)}% desconto) = ${money(sale)}`
     : `(${money(baseCost)} + ${money(fixed)} + ${money(requestedProfit)} de lucro) ÷ (1 − ${number(percent)}% comissão − ${number(discount)}% desconto) = ${money(sale)}`;
 }
 
