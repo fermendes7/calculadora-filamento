@@ -26,6 +26,9 @@ const finalPrice = document.querySelector('#finalPrice');
 const extraFormula = document.querySelector('#extraFormula');
 const calculateExtraButton = document.querySelector('#calculateExtra');
 const priceType = document.querySelector('#priceType');
+const pricingMode = document.querySelector('#pricingMode');
+const desiredProfit = document.querySelector('#desiredProfit');
+const desiredProfitSuffix = document.querySelector('#desiredProfitSuffix');
 const profitPercent = document.querySelector('#profitPercent');
 const profitBaseCost = document.querySelector('#profitBaseCost');
 const profitValue = document.querySelector('#profitValue');
@@ -112,8 +115,12 @@ function calculateProfit() {
   const discount = Number(discountPercent.value) || 0;
   const feeRate = Math.min(99.99, Math.max(0, percent)) / 100;
   const discountRate = Math.min(99.99, Math.max(0, discount)) / 100;
-  const divisor = Math.max(0.0001, 1 - feeRate - discountRate);
-  const sale = (baseCost + fixed) / divisor;
+  const requestedProfit = Math.max(0, Number(desiredProfit.value) || 0);
+  const profitRate = pricingMode.value === 'margin' ? Math.min(99.99, requestedProfit) / 100 : 0;
+  const divisor = Math.max(0.0001, 1 - feeRate - discountRate - profitRate);
+  const sale = pricingMode.value === 'margin'
+    ? (baseCost + fixed) / divisor
+    : (baseCost + fixed + requestedProfit) / Math.max(0.0001, 1 - feeRate - discountRate);
   const fee = sale * feeRate + sale * discountRate + fixed;
   const informedSale = Number(salePriceInput.value) || 0;
   const informedFee = informedSale * feeRate + informedSale * discountRate + fixed;
@@ -123,7 +130,10 @@ function calculateProfit() {
   salePriceInformed.textContent = money(informedSale);
   profitPerPiece.textContent = money(actualProfit);
   salePrice.textContent = money(sale);
-  profitFormula.textContent = `(${money(baseCost)} + ${money(fixed)}) ÷ (1 − ${number(percent)}% comissão − ${number(discount)}% desconto) = ${money(sale)}`;
+  desiredProfitSuffix.textContent = pricingMode.value === 'margin' ? '%' : 'R$';
+  profitFormula.textContent = pricingMode.value === 'margin'
+    ? `(${money(baseCost)} + ${money(fixed)}) ÷ (1 − ${number(percent)}% comissão − ${number(discount)}% desconto − ${number(requestedProfit)}% lucro) = ${money(sale)}`
+    : `(${money(baseCost)} + ${money(fixed)} + ${money(requestedProfit)} de lucro) ÷ (1 − ${number(percent)}% comissão − ${number(discount)}% desconto) = ${money(sale)}`;
 }
 
 function updateAll() {
@@ -149,4 +159,5 @@ priceType.addEventListener('change', () => {
   discountPercent.value = selected.dataset.discount;
   updateAll();
 });
+pricingMode.addEventListener('change', updateAll);
 updateAll();

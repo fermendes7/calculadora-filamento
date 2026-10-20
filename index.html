@@ -129,6 +129,17 @@
           </select>
         </label>
         <label>
+          Opção de precificação
+          <select id="pricingMode">
+            <option value="margin">Margem de lucro (%)</option>
+            <option value="fixed">Lucro fixo por peça (R$)</option>
+          </select>
+        </label>
+        <label>
+          Lucro desejado
+          <div class="input-with-suffix"><input id="desiredProfit" type="number" min="0" step="0.01" value="20" inputmode="decimal" /><span id="desiredProfitSuffix">%</span></div>
+        </label>
+        <label>
           Comissão / taxa percentual
           <div class="input-with-suffix"><input id="profitPercent" type="number" min="0" max="99.99" step="0.01" value="0" inputmode="decimal" /><span>%</span></div>
         </label>
@@ -168,6 +179,6 @@
       <p class="note">Padrões de energia: Bambu Lab A1 (0,14 kW) e Curitiba (R$ 0,85/kWh). As taxas dos canais são estimativas editáveis: variam por categoria, anúncio, campanha, logística e conta. Confirme no painel do canal antes de publicar.</p>
     </section>
   </main>
-  <script src="script.js?v=23"></script>
+  <script src="script.js?v=24"></script>
 </body>
 </html>
