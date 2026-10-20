@@ -9,6 +9,7 @@ const laborCost = document.querySelector('#laborCost');
 const breakdownFilament = document.querySelector('#breakdownFilament');
 const breakdownEnergy = document.querySelector('#breakdownEnergy');
 const breakdownLabor = document.querySelector('#breakdownLabor');
+const pieceMachine = document.querySelector('#pieceMachine');
 const pieceTotal = document.querySelector('#pieceTotal');
 const pieceFormula = document.querySelector('#pieceFormula');
 const calculateFilamentButton = document.querySelector('#calculateFilament');
@@ -20,7 +21,6 @@ const errorCost = document.querySelector('#errorCost');
 const extraPackaging = document.querySelector('#extraPackaging');
 const extraLabor = document.querySelector('#extraLabor');
 const extraOtherCosts = document.querySelector('#extraOtherCosts');
-const extraMachine = document.querySelector('#extraMachine');
 const extraError = document.querySelector('#extraError');
 const finalPrice = document.querySelector('#finalPrice');
 const extraFormula = document.querySelector('#extraFormula');
@@ -73,6 +73,7 @@ function calculatePiece() {
   breakdownFilament.textContent = money(filament);
   breakdownEnergy.textContent = money(energy);
   breakdownLabor.textContent = money(labor);
+  pieceMachine.textContent = money(machineCostPerHour.value * totalHours || 0);
   pieceTotal.textContent = money(filament + energy + labor);
   pieceFormula.textContent = `${money(filament)} + (${number(power)} kW × ${number(hours)} h ${number(minutes)} min × ${money(rate)}) + ${money(labor)}`;
 }
