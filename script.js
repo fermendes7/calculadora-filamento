@@ -96,7 +96,6 @@ function calculateExtra() {
   extraPackaging.textContent = money(packaging);
   extraLabor.textContent = money(labor);
   extraOtherCosts.textContent = money(others);
-  extraMachine.textContent = money(machine);
   extraError.textContent = money(error);
   extraError.previousElementSibling.textContent = `Custo de erro (${number(errorPercent)}%)`;
   finalPrice.textContent = money(pieceTotalValue + packaging + others + machine + error);
