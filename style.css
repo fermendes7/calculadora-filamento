@@ -42,7 +42,7 @@ input { border: 0; color: #17202a; font: inherit; font-size: 1.1rem; font-weight
 .breakdown span { color: #718096; font-size: .8rem; }
 .breakdown b { color: #334155; font-size: 1rem; }
 .total-result { margin-top: 20px; }
-.calculate-button { background: linear-gradient(135deg, #3867d6, #5b8def); border: 0; border-radius: 14px; box-shadow: 0 8px 16px rgba(56,103,214,.22); color: white; cursor: pointer; display: block; font: inherit; font-size: .92rem; font-weight: 800; margin: 22px auto 0; padding: 14px 22px; transition: box-shadow .2s, filter .2s, transform .2s; }
+.calculate-button { appearance: none; background: linear-gradient(135deg, #2858c7 0%, #548cf2 100%); border: 1px solid #214aa8; border-radius: 14px; box-shadow: 0 8px 18px rgba(40,88,199,.28); color: #fff; cursor: pointer; display: block; font: inherit; font-size: .94rem; font-weight: 800; letter-spacing: .01em; margin: 22px auto 0; min-height: 48px; padding: 14px 24px; transition: box-shadow .2s, filter .2s, transform .2s; width: min(100%, 300px); }
 .calculate-button:hover { box-shadow: 0 11px 22px rgba(56,103,214,.3); filter: brightness(1.05); transform: translateY(-2px); }
 .calculate-button:active { box-shadow: 0 4px 9px rgba(56,103,214,.2); transform: translateY(0); }
 .tips { box-shadow: none; margin-top: 18px; padding: 24px 28px; }
