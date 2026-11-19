@@ -180,7 +180,22 @@
       <p>A segunda calculadora aproveita o valor e as gramas da primeira, mas todos os campos continuam editáveis. Informe horas e minutos para calcular o tempo exato da impressão.</p>
       <p class="note">Padrões de energia: Bambu Lab A1 (0,14 kW) e Curitiba (R$ 0,85/kWh). As taxas dos canais são estimativas editáveis: variam por categoria, anúncio, campanha, logística e conta. Confirme no painel do canal antes de publicar.</p>
     </section>
+
+    <section class="calculator-card save-card" aria-label="Salvar produto na planilha">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">PRODUTOS</p>
+          <h2>Salvar produto</h2>
+        </div>
+      </div>
+      <label>
+        Nome do produto
+        <input id="productName" type="text" placeholder="Ex.: Snoop de note" autocomplete="off" />
+      </label>
+      <p class="save-status" id="saveStatus" aria-live="polite"></p>
+      <button class="calculate-button" id="saveProduct" type="button">Salvar produto</button>
+    </section>
   </main>
-  <script src="script.js?v=31"></script>
+  <script src="script.js?v=32"></script>
 </body>
 </html>

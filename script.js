@@ -37,6 +37,12 @@ const profitPerPiece = document.querySelector('#profitPerPiece');
 const salePriceInput = document.querySelector('#salePriceInput');
 const salePrice = document.querySelector('#salePrice');
 const hourlyValue = document.querySelector('#hourlyValue');
+const productName = document.querySelector('#productName');
+const saveStatus = document.querySelector('#saveStatus');
+const saveProductButton = document.querySelector('#saveProduct');
+
+// Cole aqui a URL do Web App do Google Apps Script ligado à planilha.
+const SHEETS_ENDPOINT = '';
 const profitFormula = document.querySelector('#profitFormula');
 const calculateProfitButton = document.querySelector('#calculateProfit');
 const shippingCost = document.querySelector('#shippingCost');
@@ -156,6 +162,51 @@ calculateFilamentButton.addEventListener('click', updateAll);
 calculatePieceButton.addEventListener('click', updateAll);
 calculateExtraButton.addEventListener('click', updateAll);
 calculateProfitButton.addEventListener('click', updateAll);
+
+saveProductButton.addEventListener('click', async () => {
+  const name = productName.value.trim();
+  if (!name) {
+    saveStatus.textContent = 'Informe o nome do produto.';
+    productName.focus();
+    return;
+  }
+  if (!SHEETS_ENDPOINT) {
+    saveStatus.textContent = 'A conexão com a planilha ainda precisa ser configurada no Apps Script.';
+    return;
+  }
+  updateAll();
+  const totalHours = (Number(printHours.value) || 0) + (Math.min(59, Math.max(0, Number(printMinutes.value) || 0)) / 60);
+  const payload = {
+    nome: name,
+    gramas: Number(usedWeight.value) || 0,
+    precoRolo: Number(price.value) || 0,
+    horas: Number(printHours.value) || 0,
+    minutos: Number(printMinutes.value) || 0,
+    tempoHoras: totalHours,
+    maoDeObra: Number(laborCost.value) || 0,
+    maquinaPorHora: Number(machineCostPerHour.value) || 0,
+    custoErroPercentual: Number(errorCost.value) || 0,
+    embalagem: Number(packagingCost.value) || 0,
+    outrosCustos: Number(otherCosts.value) || 0,
+    frete: Number(shippingCost.value) || 0,
+    custoPeca: Number(pieceTotal.textContent.replace(/[^0-9,-]/g, '').replace('.', '').replace(',', '.')) || 0,
+    precoSugerido: Number(salePrice.textContent.replace(/[^0-9,-]/g, '').replace('.', '').replace(',', '.')) || 0,
+    valorPorHora: Number(hourlyValue.textContent.replace(/[^0-9,-]/g, '').replace('.', '').replace(',', '.')) || 0,
+    lucroDesejado: Number(desiredProfit.value) || 0,
+    canal: priceType.value
+  };
+  saveProductButton.disabled = true;
+  saveStatus.textContent = 'Salvando...';
+  try {
+    const response = await fetch(SHEETS_ENDPOINT, { method: 'POST', body: JSON.stringify(payload) });
+    const result = await response.json();
+    saveStatus.textContent = result.action === 'updated' ? 'Produto atualizado na planilha.' : 'Produto adicionado à planilha.';
+  } catch (error) {
+    saveStatus.textContent = 'Não foi possível salvar. Verifique a conexão com o Apps Script.';
+  } finally {
+    saveProductButton.disabled = false;
+  }
+});
 
 const allInputs = document.querySelectorAll('input');
 allInputs.forEach(input => input.addEventListener('input', () => {
