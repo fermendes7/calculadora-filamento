@@ -1,7 +1,10 @@
 const SHEET_NAME = 'PRODUTOS';
 
 function doPost(e) {
-  const data = JSON.parse(e.postData.contents || '{}');
+  const raw = e.parameter && e.parameter.payload
+    ? e.parameter.payload
+    : (e.postData && e.postData.contents ? e.postData.contents : '{}');
+  const data = JSON.parse(raw);
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
   if (!sheet) return json({ error: 'Aba PRODUTOS não encontrada.' });
 
@@ -22,6 +25,10 @@ function doPost(e) {
   const output = headers.map(header => valueForHeader(normalize(header), data));
   sheet.getRange(row, 1, 1, output.length).setValues([output]);
   return json({ action: row <= values.length ? 'updated' : 'added', row: row });
+}
+
+function doGet() {
+  return json({ ok: true, message: 'Integração da calculadora ativa.' });
 }
 
 function findColumn(headers, names) {

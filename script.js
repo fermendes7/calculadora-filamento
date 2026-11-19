@@ -198,9 +198,13 @@ saveProductButton.addEventListener('click', async () => {
   saveProductButton.disabled = true;
   saveStatus.textContent = 'Salvando...';
   try {
-    const response = await fetch(SHEETS_ENDPOINT, { method: 'POST', body: JSON.stringify(payload) });
-    const result = await response.json();
-    saveStatus.textContent = result.action === 'updated' ? 'Produto atualizado na planilha.' : 'Produto adicionado à planilha.';
+    await fetch(SHEETS_ENDPOINT, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+      body: new URLSearchParams({ payload: JSON.stringify(payload) })
+    });
+    saveStatus.textContent = 'Dados enviados. Confira a aba PRODUTOS na planilha.';
   } catch (error) {
     saveStatus.textContent = 'Não foi possível salvar. Verifique a conexão com o Apps Script.';
   } finally {
