@@ -25,11 +25,12 @@ function doPost(e) {
     }
   }
   if (row < 0) {
-    // getLastRow() pode apontar para o fim da formatação da planilha.
-    // Procura a primeira linha realmente vazia na coluna do produto.
+    // Continua a lista pelo último produto real da coluna B, ignorando linhas formatadas.
     row = HEADER_ROW + 1;
-    while (row <= sheet.getMaxRows() && normalize(sheet.getRange(row, nameColumn).getDisplayValue())) row++;
-    if (row > sheet.getMaxRows()) sheet.insertRowAfter(sheet.getMaxRows());
+    for (let i = HEADER_ROW + 1; i <= values.length; i++) {
+      if (normalize(values[i - 1][nameColumn - 1])) row = i + 1;
+    }
+    if (row > sheet.getMaxRows()) sheet.insertRowsAfter(sheet.getMaxRows(), row - sheet.getMaxRows());
   }
 
   const currentRow = row <= sheet.getLastRow()
