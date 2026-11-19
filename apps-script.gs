@@ -24,6 +24,12 @@ function doPost(e) {
       break;
     }
   }
+  if (data.acao === 'apagar') {
+    if (row < 0) return json({ ok: false, action: 'not_found', product: data.nome });
+    sheet.deleteRow(row);
+    SpreadsheetApp.flush();
+    return json({ ok: true, action: 'deleted', row: row, product: data.nome });
+  }
   if (row < 0) {
     // Usa exclusivamente a coluna B: a primeira célula vazia após o cabeçalho.
     row = HEADER_ROW + 1;

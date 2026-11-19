@@ -40,6 +40,7 @@ const hourlyValue = document.querySelector('#hourlyValue');
 const productName = document.querySelector('#productName');
 const saveStatus = document.querySelector('#saveStatus');
 const saveProductButton = document.querySelector('#saveProduct');
+const deleteProductButton = document.querySelector('#deleteProduct');
 
 // Cole aqui a URL do Web App do Google Apps Script ligado à planilha.
 const SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxoPgHOhd1bLRmicYjeMhS3gIIfHmnGq9DuD9dWZ0TMUvMXlN3CvXD_193wuS5zdr4y/exec';
@@ -209,6 +210,31 @@ saveProductButton.addEventListener('click', async () => {
     saveStatus.textContent = 'Não foi possível salvar. Verifique a conexão com o Apps Script.';
   } finally {
     saveProductButton.disabled = false;
+  }
+});
+
+deleteProductButton.addEventListener('click', async () => {
+  const name = productName.value.trim();
+  if (!name) {
+    saveStatus.textContent = 'Informe o nome exato do produto para apagar.';
+    productName.focus();
+    return;
+  }
+  if (!confirm(`Apagar o produto "${name}" da planilha?`)) return;
+  deleteProductButton.disabled = true;
+  saveStatus.textContent = 'Apagando...';
+  try {
+    await fetch(SHEETS_ENDPOINT, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+      body: JSON.stringify({ acao: 'apagar', nome: name })
+    });
+    saveStatus.textContent = 'Solicitação de exclusão enviada. Confira a aba PRODUTOS.';
+  } catch (error) {
+    saveStatus.textContent = 'Não foi possível apagar. Verifique a conexão com o Apps Script.';
+  } finally {
+    deleteProductButton.disabled = false;
   }
 });
 
