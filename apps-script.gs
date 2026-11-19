@@ -13,7 +13,9 @@ function doPost(e) {
   const lastColumn = Math.max(sheet.getLastColumn(), 1);
   const headers = sheet.getRange(HEADER_ROW, 1, 1, lastColumn).getValues()[0];
   const normalizedHeaders = headers.map(normalize);
-  const nameColumn = findColumn(normalizedHeaders, ['nome', 'produto', 'nomeproduto']) || 1;
+  // Na planilha atual o cabeçalho está na linha 2 e o produto fica na coluna B.
+  // O fallback precisa ser 2 para nunca gravar o nome na coluna Nº (A).
+  const nameColumn = findColumn(normalizedHeaders, ['nome', 'produto', 'nomeproduto']) || 2;
   const values = sheet.getDataRange().getValues();
   let row = -1;
   for (let i = HEADER_ROW; i < values.length; i++) {
@@ -22,7 +24,7 @@ function doPost(e) {
       break;
     }
   }
-  if (row < 0) row = Math.max(sheet.getLastRow() + 1, 2);
+  if (row < 0) row = Math.max(sheet.getLastRow() + 1, HEADER_ROW + 1);
 
   const currentRow = row <= sheet.getLastRow()
     ? sheet.getRange(row, 1, 1, lastColumn).getValues()[0]
