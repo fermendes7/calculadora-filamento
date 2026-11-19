@@ -15,7 +15,7 @@ function doPost(e) {
   const normalizedHeaders = headers.map(normalize);
   // Na planilha atual o cabeçalho está na linha 2 e o produto fica na coluna B.
   // O fallback precisa ser 2 para nunca gravar o nome na coluna Nº (A).
-  const nameColumn = findColumn(normalizedHeaders, ['nome', 'produto', 'nomeproduto']) || 2;
+  const nameColumn = 2;
   const values = sheet.getDataRange().getValues();
   let row = -1;
   for (let i = HEADER_ROW; i < values.length; i++) {
@@ -25,12 +25,10 @@ function doPost(e) {
     }
   }
   if (row < 0) {
-    // Continua a lista pelo último produto real da coluna B, ignorando linhas formatadas.
+    // Usa exclusivamente a coluna B: a primeira célula vazia após o cabeçalho.
     row = HEADER_ROW + 1;
-    for (let i = HEADER_ROW + 1; i <= values.length; i++) {
-      if (normalize(values[i - 1][nameColumn - 1])) row = i + 1;
-    }
-    if (row > sheet.getMaxRows()) sheet.insertRowsAfter(sheet.getMaxRows(), row - sheet.getMaxRows());
+    while (row <= sheet.getMaxRows() && normalize(sheet.getRange(row, nameColumn).getDisplayValue())) row++;
+    if (row > sheet.getMaxRows()) sheet.insertRowAfter(sheet.getMaxRows());
   }
 
   const currentRow = row <= sheet.getLastRow()
