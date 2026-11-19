@@ -201,8 +201,8 @@ saveProductButton.addEventListener('click', async () => {
     await fetch(SHEETS_ENDPOINT, {
       method: 'POST',
       mode: 'no-cors',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
-      body: new URLSearchParams({ payload: JSON.stringify(payload) })
+      headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+      body: JSON.stringify(payload)
     });
     saveStatus.textContent = 'Dados enviados. Confira a aba PRODUTOS na planilha.';
   } catch (error) {
