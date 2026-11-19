@@ -36,6 +36,7 @@ const salePriceInformed = document.querySelector('#salePriceInformed');
 const profitPerPiece = document.querySelector('#profitPerPiece');
 const salePriceInput = document.querySelector('#salePriceInput');
 const salePrice = document.querySelector('#salePrice');
+const hourlyValue = document.querySelector('#hourlyValue');
 const profitFormula = document.querySelector('#profitFormula');
 const calculateProfitButton = document.querySelector('#calculateProfit');
 const shippingCost = document.querySelector('#shippingCost');
@@ -132,11 +133,13 @@ function calculateProfit() {
   const informedSale = Number(salePriceInput.value) || 0;
   const informedFee = informedSale * feeRate + informedSale * discountRate + fixed;
   const actualProfit = informedSale - baseCost - informedFee;
+  const totalPrintHours = (Number(printHours.value) || 0) + (Math.min(59, Math.max(0, Number(printMinutes.value) || 0)) / 60);
   profitBaseCost.textContent = money(baseCost);
   profitValue.textContent = money(fee);
   salePriceInformed.textContent = money(informedSale);
   profitPerPiece.textContent = money(actualProfit);
   salePrice.textContent = money(sale);
+  hourlyValue.textContent = money(totalPrintHours > 0 ? sale / totalPrintHours : 0);
   desiredProfitSuffix.textContent = pricingMode.value === 'margin' ? '%' : 'R$';
   profitFormula.textContent = pricingMode.value === 'margin'
     ? `(${money(baseCost)} + ${money(fixed)}) × (1 + ${number(requestedProfit)}% lucro) ÷ (1 − ${number(percent)}% comissão − ${number(discount)}% desconto) = ${money(sale)}`
