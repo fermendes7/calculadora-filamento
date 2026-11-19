@@ -1,11 +1,12 @@
 const SHEET_NAME = 'PRODUTOS';
+const SPREADSHEET_ID = '1EBM7_ac7XW0DI5IXg8p_VdiFZxjBshEvG3nFQeqmj-c';
 
 function doPost(e) {
   const raw = e.parameter && e.parameter.payload
     ? e.parameter.payload
     : (e.postData && e.postData.contents ? e.postData.contents : '{}');
   const data = JSON.parse(raw);
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
   if (!sheet) return json({ error: 'Aba PRODUTOS não encontrada.' });
 
   const lastColumn = Math.max(sheet.getLastColumn(), 1);
