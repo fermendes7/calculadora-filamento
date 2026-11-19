@@ -1,5 +1,6 @@
 const SHEET_NAME = 'PRODUTOS';
 const SPREADSHEET_ID = '1EBM7_ac7XW0DI5IXg8p_VdiFZxjBshEvG3nFQeqmj-c';
+const HEADER_ROW = 2;
 
 function doPost(e) {
   const raw = e.parameter && e.parameter.payload
@@ -10,12 +11,12 @@ function doPost(e) {
   if (!sheet) return json({ error: 'Aba PRODUTOS não encontrada.' });
 
   const lastColumn = Math.max(sheet.getLastColumn(), 1);
-  const headers = sheet.getRange(1, 1, 1, lastColumn).getValues()[0];
+  const headers = sheet.getRange(HEADER_ROW, 1, 1, lastColumn).getValues()[0];
   const normalizedHeaders = headers.map(normalize);
   const nameColumn = findColumn(normalizedHeaders, ['nome', 'produto', 'nomeproduto']) || 1;
   const values = sheet.getDataRange().getValues();
   let row = -1;
-  for (let i = 1; i < values.length; i++) {
+  for (let i = HEADER_ROW; i < values.length; i++) {
     if (normalize(values[i][nameColumn - 1]) === normalize(data.nome)) {
       row = i + 1;
       break;
@@ -23,7 +24,14 @@ function doPost(e) {
   }
   if (row < 0) row = Math.max(sheet.getLastRow() + 1, 2);
 
-  const output = headers.map(header => valueForHeader(normalize(header), data));
+  const currentRow = row <= sheet.getLastRow()
+    ? sheet.getRange(row, 1, 1, lastColumn).getValues()[0]
+    : [];
+
+  const output = headers.map((header, index) => {
+    const value = valueForHeader(normalize(header), data);
+    return value === undefined ? (currentRow[index] || '') : value;
+  });
   sheet.getRange(row, 1, 1, output.length).setValues([output]);
   return json({ action: row <= values.length ? 'updated' : 'added', row: row });
 }
@@ -53,7 +61,7 @@ function valueForHeader(header, data) {
     valorporhora: 'valorPorHora', lucro: 'lucroDesejado', canal: 'canal'
   };
   const key = aliases[header];
-  return key ? (data[key] ?? '') : '';
+  return key ? (data[key] ?? '') : undefined;
 }
 
 function normalize(value) {
