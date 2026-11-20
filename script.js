@@ -44,7 +44,7 @@ const saveProductButton = document.querySelector('#saveProduct');
 const deleteProductButton = document.querySelector('#deleteProduct');
 
 // Cole aqui a URL do Web App do Google Apps Script ligado à planilha.
-const SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycby2-cLqduBn5j8CXsFAVeqvI6oXTazBKILREAXUoUYlADWIWmpG1E9Q-SwrpHNG43tO/exec';
+const SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzoh8xvTwstkCUqcWci0bsVRQyMwomUjngdCKnvIJcDzb-dgm8OPbF4Oq9YNhujZJhh/exec';
 const profitFormula = document.querySelector('#profitFormula');
 const shippingCost = document.querySelector('#shippingCost');
 const fixedFee = document.querySelector('#fixedFee');

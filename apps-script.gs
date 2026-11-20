@@ -30,8 +30,8 @@ function doPost(e) {
     sheet.getRange(HEADER_ROW, 11).setValue('Outros custos totais');
     headers[10] = 'Outros custos totais';
   }
-  ensurePercentualVendaAfterCusto_(sheet);
   ensureHeader_(sheet, 'NOME DO ARQUIVO');
+  reorderColumns_(sheet);
   lastColumn = Math.max(sheet.getLastColumn(), 1);
   headers = sheet.getRange(HEADER_ROW, 1, 1, lastColumn).getValues()[0];
   linkColumn = headers.findIndex(h => normalize(h) === 'link') + 1;
@@ -123,7 +123,7 @@ function valueForHeader(header, data, index) {
     custopeca: 'custoPeca', custototal: 'custoTotal', precosugerido: 'precoSugerido',
     erro: 'erroValor', custoerro: 'custoErroPercentual',
     valorporhora: 'valorPorHora', lucro: 'lucroDesejado', canal: 'canal',
-    valor: 'precoSugerido', percentualvenda: 'lucroDesejado', desconto: 'discountPercent', total: 'precoSugerido'
+    valor: 'precoSugerido', percentualvenda: 'lucroDesejado', venda: 'lucroDesejado', desconto: 'discountPercent', total: 'precoSugerido'
   };
   const key = aliases[header];
   if (key) return data[key] ?? '';
@@ -137,7 +137,7 @@ function ensurePercentualVendaAfterCusto_(sheet) {
   const last = Math.max(sheet.getLastColumn(), 1);
   const headers = sheet.getRange(HEADER_ROW, 1, 1, last).getDisplayValues()[0];
   const custo = headers.findIndex(h => normalize(h) === 'custo') + 1;
-  const percentual = headers.findIndex(h => normalize(h) === 'percentualvenda') + 1;
+  const percentual = headers.findIndex(h => ['percentualvenda','venda'].includes(normalize(h))) + 1;
   if (!custo || !percentual || percentual === custo + 1) return;
   sheet.moveColumns(sheet.getRange(1, percentual, sheet.getMaxRows(), 1), custo + 1);
 }
@@ -169,14 +169,14 @@ function reorderColumns_(sheet) {
     if (normalize(headers[i]) === 'erro') sheet.deleteColumn(i + 1);
   }
 
-  const order = ['produto','preco','gramas','tempo','escala','nomedoarquivo','objeto','maoobra','maodeobra','maquina','energia','embal','outroscustostotais','custodeerro','custo','percentualvenda','valor','desconto','total','frete'];
+  const order = ['produto','preco','gramas','tempo','escala','nomedoarquivo','objeto','maodeobra','maoobra','maquina','energia','embal','outroscustostotais','custodeerro','custo','venda','percentualvenda','valor','desconto','total','frete','link'];
   let target = 2;
   for (const wanted of order) {
     last = Math.max(sheet.getLastColumn(), 1);
     headers = sheet.getRange(HEADER_ROW, 1, 1, last).getDisplayValues()[0];
     let from = 0;
     for (let i = 1; i < headers.length; i++) {
-      if (normalize(headers[i]) === wanted) { from = i + 1; break; }
+      if (normalize(headers[i]) === wanted || (wanted === 'venda' && normalize(headers[i]) === 'percentualvenda')) { from = i + 1; break; }
     }
     if (!from) continue;
     if (from !== target) sheet.moveColumns(sheet.getRange(1, from, sheet.getMaxRows(), 1), target);
