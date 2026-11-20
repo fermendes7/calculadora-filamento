@@ -41,7 +41,7 @@ const saveProductButton = document.querySelector('#saveProduct');
 const deleteProductButton = document.querySelector('#deleteProduct');
 
 // Cole aqui a URL do Web App do Google Apps Script ligado à planilha.
-const SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxFEFUS9AmbUgISGAMikWJQbWPZp7gQSMmKf-nVquakCvUkp_Q_br19QC8wjnCxZ08O/exec';
+const SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzOtr4kW0eK3cDKxiAiq5mGVhvViOJHU-HPJSdgl3Gy1p7HrKASJNMb3l7K1g0MxZS8/exec';
 const profitFormula = document.querySelector('#profitFormula');
 const shippingCost = document.querySelector('#shippingCost');
 const fixedFee = document.querySelector('#fixedFee');
@@ -169,6 +169,15 @@ saveProductButton.addEventListener('click', async () => {
   }
   updateAll();
   const totalHours = (Number(printHours.value) || 0) + (Math.min(59, Math.max(0, Number(printMinutes.value) || 0)) / 60);
+  const filamentValue = (Number(price.value) || 0) / 1000 * (Number(usedWeight.value) || 0);
+  const energyValue = 0.14 * totalHours * 0.85;
+  const machineValue = (Number(machineCostPerHour.value) || 0) * totalHours;
+  const laborValue = Number(laborCost.value) || 0;
+  const pieceBaseValue = filamentValue + energyValue + laborValue + machineValue;
+  const errorPercentValue = Math.min(100, Math.max(0, Number(errorCost.value) || 0));
+  const errorValue = pieceBaseValue * errorPercentValue / 100;
+  const additionalValue = (Number(packagingCost.value) || 0) + (Number(otherCosts.value) || 0) + errorValue;
+  const finalCostValue = pieceBaseValue + additionalValue;
   const payload = {
     nome: name,
     link: productLink.value.trim(),
@@ -178,15 +187,20 @@ saveProductButton.addEventListener('click', async () => {
     minutos: Number(printMinutes.value) || 0,
     tempoHoras: totalHours,
     tempo: `${String(Number(printHours.value) || 0).padStart(2, '0')}:${String(Number(printMinutes.value) || 0).padStart(2, '0')}:00`,
-    energia: 0.14 * totalHours * 0.85,
+    energia: energyValue,
+    filamento: filamentValue,
+    maquinaTotal: machineValue,
+    erroValor: errorValue,
+    custosAdicionais: additionalValue,
+    custoBase: pieceBaseValue,
     maoDeObra: Number(laborCost.value) || 0,
     maquinaPorHora: Number(machineCostPerHour.value) || 0,
     custoErroPercentual: Number(errorCost.value) || 0,
     embalagem: Number(packagingCost.value) || 0,
     outrosCustos: Number(otherCosts.value) || 0,
     frete: Number(shippingCost.value) || 0,
-    custoPeca: Number(pieceTotal.textContent.replace(/[^0-9,-]/g, '').replace('.', '').replace(',', '.')) || 0,
-    custoTotal: Number(finalPrice.textContent.replace(/[^0-9,-]/g, '').replace('.', '').replace(',', '.')) || 0,
+    custoPeca: pieceBaseValue,
+    custoTotal: finalCostValue,
     precoSugerido: Number(salePrice.textContent.replace(/[^0-9,-]/g, '').replace('.', '').replace(',', '.')) || 0,
     valorPorHora: Number(hourlyValue.textContent.replace(/[^0-9,-]/g, '').replace('.', '').replace(',', '.')) || 0,
     lucroDesejado: Number(desiredProfit.value) || 0,
@@ -248,5 +262,6 @@ priceType.addEventListener('change', () => {
 });
 pricingMode.addEventListener('change', updateAll);
 updateAll();
+
 
 

@@ -18,6 +18,10 @@ function doPost(e) {
     sheet.getRange(HEADER_ROW, lastColumn).setValue('LINK');
     headers = sheet.getRange(HEADER_ROW, 1, 1, lastColumn).getValues()[0];
   }
+  if (headers.length >= 11 && normalize(headers[10]) === 'montagem') {
+    sheet.getRange(HEADER_ROW, 11).setValue('CUSTOS ADICIONAIS');
+    headers[10] = 'CUSTOS ADICIONAIS';
+  }
   const normalizedHeaders = headers.map(normalize);
   // Na planilha atual o cabeçalho está na linha 2 e o produto fica na coluna B.
   // O fallback precisa ser 2 para nunca gravar o nome na coluna Nº (A).
@@ -71,6 +75,26 @@ function findColumn(headers, names) {
 }
 
 function valueForHeader(header, data, index) {
+  // Layout da aba PRODUTOS: escreve cada cálculo na coluna correspondente.
+  const byColumn = {
+    1: data.nome,
+    2: data.precoSugerido,
+    4: data.gramas,
+    5: data.tempo,
+    6: data.custoBase + data.erroValor,
+    8: data.embalagem,
+    9: data.maoDeObra,
+    10: data.custosAdicionais,
+    11: data.maquinaTotal,
+    12: data.energia,
+    13: data.custoTotal,
+    14: data.custoErroPercentual,
+    15: data.precoSugerido,
+    16: data.lucroDesejado,
+    17: data.precoSugerido,
+    18: data.frete
+  };
+  if (Object.prototype.hasOwnProperty.call(byColumn, index)) return byColumn[index] ?? '';
   const aliases = {
     nome: 'nome', produto: 'nome', nomeproduto: 'nome',
     link: 'link', url: 'link', linkproduto: 'link',
