@@ -13,12 +13,6 @@ function doPost(e) {
 
   let lastColumn = Math.max(sheet.getLastColumn(), 1);
   let headers = sheet.getRange(HEADER_ROW, 1, 1, lastColumn).getValues()[0];
-  const hasLinkColumn = headers.some(header => ['link', 'url', 'linkproduto'].includes(normalize(header)));
-  if (data.link && !hasLinkColumn) {
-    lastColumn += 1;
-    sheet.getRange(HEADER_ROW, lastColumn).setValue('LINK');
-    headers = sheet.getRange(HEADER_ROW, 1, 1, lastColumn).getValues()[0];
-  }
   if (headers.length >= 7 && normalize(headers[6]) === 'custo') {
     sheet.getRange(HEADER_ROW, 7).setValue('Custo de erro');
     headers[6] = 'Custo de erro';
