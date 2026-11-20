@@ -136,7 +136,7 @@ function reorderColumns_(sheet) {
     if (normalize(headers[i]) === 'erro') sheet.deleteColumn(i + 1);
   }
 
-  const order = ['produto','preco','gramas','tempo','custodeerro','objeto','maodeobra','maquina','energia','custo','embal','outroscustostotais','frete','valor','percentualvenda','total'];
+  const order = ['produto','preco','gramas','tempo','custodeerro','objeto','maoobra','maodeobra','maquina','energia','embal','outroscustostotais','custo','frete','valor','percentualvenda','total'];
   let target = 2;
   for (const wanted of order) {
     last = Math.max(sheet.getLastColumn(), 1);
