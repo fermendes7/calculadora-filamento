@@ -47,7 +47,7 @@ function doPost(e) {
     return value === undefined ? (currentRow[index] || '') : value;
   });
   // A coluna A é a numeração correspondente à posição do produto na coluna B.
-  if (output.length >= 1 && !output[0]) output[0] = row - HEADER_ROW;
+  if (output.length >= 1) output[0] = row - HEADER_ROW;
   sheet.getRange(row, 1, 1, output.length).setValues([output]);
   return json({ action: wasExisting ? 'updated' : 'added', row: row });
 }
