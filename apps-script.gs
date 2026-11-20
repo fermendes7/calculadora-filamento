@@ -31,7 +31,6 @@ function doPost(e) {
     headers[10] = 'Outros custos totais';
   }
   ensureHeader_(sheet, 'NOME DO ARQUIVO');
-  reorderColumns_(sheet);
   lastColumn = Math.max(sheet.getLastColumn(), 1);
   headers = sheet.getRange(HEADER_ROW, 1, 1, lastColumn).getValues()[0];
   linkColumn = headers.findIndex(h => normalize(h) === 'link') + 1;
@@ -75,6 +74,17 @@ function doPost(e) {
   // A coluna A é a numeração correspondente à posição do produto na coluna B.
   if (output.length >= 1) output[0] = row - HEADER_ROW;
   sheet.getRange(row, 1, 1, output.length).setValues([output]);
+  const savedHeaders = sheet.getRange(HEADER_ROW, 1, 1, sheet.getLastColumn()).getDisplayValues()[0];
+  const objectColumn = savedHeaders.findIndex(h => normalize(h) === 'objeto') + 1;
+  const costColumn = savedHeaders.findIndex(h => normalize(h) === 'custo') + 1;
+  if (objectColumn) sheet.getRange(row, objectColumn).setNumberFormat('0');
+  if (costColumn) {
+    const costCell = sheet.getRange(row, costColumn).getA1Notation();
+    for (const rule of [{ name: 'promocao', factor: 1.5 }, { name: 'parcerias', factor: 1.3 }]) {
+      const channelColumn = savedHeaders.findIndex(h => normalize(h) === rule.name) + 1;
+      if (channelColumn) sheet.getRange(row, channelColumn).setFormula(`=${costCell}*${rule.factor}`);
+    }
+  }
   sheet.getRange(row, 1, 1, output.length).setFontWeight('bold');
   if (data.link) {
     const url = String(data.link).trim();
