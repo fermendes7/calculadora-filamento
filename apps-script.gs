@@ -13,6 +13,15 @@ function doPost(e) {
 
   let lastColumn = Math.max(sheet.getLastColumn(), 1);
   let headers = sheet.getRange(HEADER_ROW, 1, 1, lastColumn).getValues()[0];
+  // O nome fica sempre em B. Se a coluna de link ainda não existir, crie-a
+  // explicitamente para evitar que o URL seja perdido ao montar a linha.
+  let linkColumn = headers.findIndex(h => normalize(h) === 'link') + 1;
+  if (!linkColumn) {
+    linkColumn = lastColumn + 1;
+    sheet.getRange(HEADER_ROW, linkColumn).setValue('LINK');
+    lastColumn = linkColumn;
+    headers = sheet.getRange(HEADER_ROW, 1, 1, lastColumn).getValues()[0];
+  }
   if (headers.length >= 7 && normalize(headers[6]) === 'custo') {
     sheet.getRange(HEADER_ROW, 7).setValue('Custo de erro');
     headers[6] = 'Custo de erro';
@@ -63,10 +72,17 @@ function doPost(e) {
   sheet.getRange(row, 1, 1, output.length).setValues([output]);
   sheet.getRange(row, 1, 1, output.length).setFontWeight('bold');
   if (data.link) {
-    const safeUrl = String(data.link).replace(/"/g, '""');
-    const safeName = String(data.nome).replace(/"/g, '""');
-    sheet.getRange(row, nameColumn).setRichTextValue(SpreadsheetApp.newRichTextValue().setText(safeName).setLinkUrl(data.link).build());
+    const url = String(data.link).trim();
+    const safeName = String(data.nome).trim();
+    // Grava o URL também na coluna LINK e o nome como rich text em B.
+    // Isso torna o salvamento idempotente: tanto produto novo quanto existente
+    // recebem/atualizam o link sempre.
+    sheet.getRange(row, linkColumn).setValue(url);
+    sheet.getRange(row, nameColumn).setRichTextValue(
+      SpreadsheetApp.newRichTextValue().setText(safeName).setLinkUrl(url).build()
+    );
   }
+  SpreadsheetApp.flush();
   return json({ action: wasExisting ? 'updated' : 'added', row: row });
 }
 
