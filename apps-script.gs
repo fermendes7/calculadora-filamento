@@ -169,7 +169,7 @@ function reorderColumns_(sheet) {
     if (['erro', 'total'].includes(normalize(headers[i]))) sheet.deleteColumn(i + 1);
   }
 
-  const order = ['produto','preco','gramas','tempo','escala','objeto','maodeobra','maoobra','maquina','energia','embal','outroscustostotais','custodeerro','custo','venda','percentualvenda','valor','desconto','frete','parcerias','nomedoarquivo','link'];
+  const order = ['produto','preco','gramas','tempo','escala','objeto','maodeobra','maoobra','maquina','energia','embal','outroscustostotais','custodeerro','custo','venda','percentualvenda','valor','desconto','frete','parcerias'];
   let target = 2;
   for (const wanted of order) {
     last = Math.max(sheet.getLastColumn(), 1);
@@ -181,6 +181,13 @@ function reorderColumns_(sheet) {
     if (!from) continue;
     if (from !== target) sheet.moveColumns(sheet.getRange(1, from, sheet.getMaxRows(), 1), target);
     target++;
+  }
+  // Nome do arquivo e link ficam sempre nas duas últimas colunas.
+  for (const wanted of ['nomedoarquivo', 'link']) {
+    last = Math.max(sheet.getLastColumn(), 1);
+    headers = sheet.getRange(HEADER_ROW, 1, 1, last).getDisplayValues()[0];
+    const from = headers.findIndex(h => normalize(h) === wanted) + 1;
+    if (from && from !== last) sheet.moveColumns(sheet.getRange(1, from, sheet.getMaxRows(), 1), last);
   }
   SpreadsheetApp.flush();
   return json({ ok: true, action: 'reordered', lastColumn: sheet.getLastColumn() });
