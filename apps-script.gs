@@ -95,12 +95,15 @@ function valueForHeader(header, data, index) {
     preco: 'precoSugerido', precorolo: 'precoRolo', precofilamento: 'precoRolo',
     escala: undefined, esc: undefined,
     tempo: 'tempo', horas: 'horas', minutos: 'minutos', tempohoras: 'tempoHoras',
-    custo: 'custoPeca', custoobjeto: 'custoPeca', custodeerro: 'erroValor',
+    custo: 'custoPeca', custoobjeto: 'custoPeca',
+    // A coluna "Custo de erro" da planilha representa a taxa percentual (ex.: 20%).
+    // O valor calculado em reais fica na coluna "Erro".
+    custodeerro: 'custoErroPercentual',
     maodeobra: 'maoDeObra', maoobra: 'maoDeObra', maquina: 'maquinaTotal', manutencao: 'maquinaTotal',
     montagem: 'outrosCustos', energia: 'energia',
     embalagem: 'embalagem', embal: 'embalagem', outroscustos: 'outrosCustos', outrocustostotais: 'outrosCustos', frete: 'frete',
     custopeca: 'custoPeca', custototal: 'custoTotal', precosugerido: 'precoSugerido',
-    erro: 'custoErroPercentual', custoerro: 'custoErroPercentual',
+    erro: 'erroValor', custoerro: 'custoErroPercentual',
     valorporhora: 'valorPorHora', lucro: 'lucroDesejado', canal: 'canal',
     valor: 'precoSugerido', percentualvenda: 'lucroDesejado'
   };

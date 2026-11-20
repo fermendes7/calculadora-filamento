@@ -175,8 +175,9 @@ saveProductButton.addEventListener('click', async () => {
   updateAll();
   const totalHours = (Number(printHours.value) || 0) + (Math.min(59, Math.max(0, Number(printMinutes.value) || 0)) / 60);
   const quantity = Math.max(1, Math.floor(Number(objectCount.value) || 1));
-  const setupMinutes = 10;
-  const adjustedTotalHours = totalHours + setupMinutes / 60;
+  // Salvar exatamente os valores exibidos na calculadora. A calibragem não é
+  // acrescentada apenas no salvamento, pois isso fazia a planilha divergir da tela.
+  const adjustedTotalHours = totalHours;
   const filamentValue = (Number(price.value) || 0) / 1000 * (Number(usedWeight.value) || 0) * quantity;
   const energyValue = 0.14 * adjustedTotalHours * 0.85 * quantity;
   const machineValue = (Number(machineCostPerHour.value) || 0) * adjustedTotalHours * quantity;
@@ -184,7 +185,9 @@ saveProductButton.addEventListener('click', async () => {
   const pieceBaseValue = filamentValue + energyValue + laborValue + machineValue;
   const errorPercentValue = Math.min(100, Math.max(0, Number(errorCost.value) || 0));
   const errorValue = pieceBaseValue * errorPercentValue / 100;
-  const additionalValue = (Number(packagingCost.value) || 0) + (Number(otherCosts.value) || 0) + errorValue;
+  const packagingValue = (Number(packagingCost.value) || 0) * quantity;
+  const otherCostsValue = (Number(otherCosts.value) || 0) * quantity;
+  const additionalValue = packagingValue + otherCostsValue + errorValue;
   const finalCostValue = pieceBaseValue + additionalValue;
   const payload = {
     nome: name,
@@ -196,7 +199,7 @@ saveProductButton.addEventListener('click', async () => {
     tempoHoras: adjustedTotalHours,
     tempo: `${String(Math.floor(adjustedTotalHours)).padStart(2, '0')}:${String(Math.round((adjustedTotalHours % 1) * 60)).padStart(2, '0')}:00`,
     objetos: quantity,
-    tempoPreparacaoMinutos: setupMinutes,
+    tempoPreparacaoMinutos: 0,
     energia: energyValue,
     filamento: filamentValue,
     maquinaTotal: machineValue,
@@ -206,8 +209,8 @@ saveProductButton.addEventListener('click', async () => {
     maoDeObra: laborValue,
     maquinaPorHora: Number(machineCostPerHour.value) || 0,
     custoErroPercentual: Number(errorCost.value) || 0,
-    embalagem: Number(packagingCost.value) || 0,
-    outrosCustos: Number(otherCosts.value) || 0,
+    embalagem: packagingValue,
+    outrosCustos: otherCostsValue,
     frete: Number(shippingCost.value) || 0,
     custoPeca: pieceBaseValue,
     custoTotal: finalCostValue,
