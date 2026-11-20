@@ -125,11 +125,19 @@ function json(value) {
 }
 
 function reorderColumns_(sheet) {
-  const order = ['produto','gramas','preco','tempo','objeto','maodeobra','maquina','energia','embal','outroscustostotais','outrocustostotais','custodeerro','custo','erro','frete','valor','percentualvenda','total'];
+  // Remove a coluna antiga "ERRO". O percentual já fica em "Custo de erro"
+  // e o valor em reais é somado ao custo final, sem uma segunda coluna.
+  let last = Math.max(sheet.getLastColumn(), 1);
+  let headers = sheet.getRange(HEADER_ROW, 1, 1, last).getDisplayValues()[0];
+  for (let i = headers.length - 1; i >= 1; i--) {
+    if (normalize(headers[i]) === 'erro') sheet.deleteColumn(i + 1);
+  }
+
+  const order = ['produto','preco','gramas','tempo','custodeerro','objeto','maodeobra','maquina','energia','custo','embal','outroscustostotais','frete','valor','percentualvenda','total'];
   let target = 2;
   for (const wanted of order) {
-    const last = Math.max(sheet.getLastColumn(), 1);
-    const headers = sheet.getRange(HEADER_ROW, 1, 1, last).getDisplayValues()[0];
+    last = Math.max(sheet.getLastColumn(), 1);
+    headers = sheet.getRange(HEADER_ROW, 1, 1, last).getDisplayValues()[0];
     let from = 0;
     for (let i = 1; i < headers.length; i++) {
       if (normalize(headers[i]) === wanted) { from = i + 1; break; }
