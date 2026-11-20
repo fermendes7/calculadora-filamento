@@ -41,7 +41,7 @@ const saveProductButton = document.querySelector('#saveProduct');
 const deleteProductButton = document.querySelector('#deleteProduct');
 
 // Cole aqui a URL do Web App do Google Apps Script ligado à planilha.
-const SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwpMTUiokmUNRhns1m1bl7BxYHSs7-KeRZpi3rb7tjJBSG1J5Bf5M3Zrt_cWDrxL-t3/exec';
+const SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxFEFUS9AmbUgISGAMikWJQbWPZp7gQSMmKf-nVquakCvUkp_Q_br19QC8wjnCxZ08O/exec';
 const profitFormula = document.querySelector('#profitFormula');
 const shippingCost = document.querySelector('#shippingCost');
 const fixedFee = document.querySelector('#fixedFee');
@@ -177,6 +177,8 @@ saveProductButton.addEventListener('click', async () => {
     horas: Number(printHours.value) || 0,
     minutos: Number(printMinutes.value) || 0,
     tempoHoras: totalHours,
+    tempo: `${String(Number(printHours.value) || 0).padStart(2, '0')}:${String(Number(printMinutes.value) || 0).padStart(2, '0')}:00`,
+    energia: 0.14 * totalHours * 0.85,
     maoDeObra: Number(laborCost.value) || 0,
     maquinaPorHora: Number(machineCostPerHour.value) || 0,
     custoErroPercentual: Number(errorCost.value) || 0,
@@ -184,6 +186,7 @@ saveProductButton.addEventListener('click', async () => {
     outrosCustos: Number(otherCosts.value) || 0,
     frete: Number(shippingCost.value) || 0,
     custoPeca: Number(pieceTotal.textContent.replace(/[^0-9,-]/g, '').replace('.', '').replace(',', '.')) || 0,
+    custoTotal: Number(finalPrice.textContent.replace(/[^0-9,-]/g, '').replace('.', '').replace(',', '.')) || 0,
     precoSugerido: Number(salePrice.textContent.replace(/[^0-9,-]/g, '').replace('.', '').replace(',', '.')) || 0,
     valorPorHora: Number(hourlyValue.textContent.replace(/[^0-9,-]/g, '').replace('.', '').replace(',', '.')) || 0,
     lucroDesejado: Number(desiredProfit.value) || 0,
@@ -245,4 +248,5 @@ priceType.addEventListener('change', () => {
 });
 pricingMode.addEventListener('change', updateAll);
 updateAll();
+
 

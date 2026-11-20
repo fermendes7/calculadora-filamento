@@ -49,7 +49,7 @@ function doPost(e) {
     : [];
 
   const output = headers.map((header, index) => {
-    const value = valueForHeader(normalize(header), data);
+    const value = valueForHeader(normalize(header), data, index);
     return value === undefined ? (currentRow[index] || '') : value;
   });
   // A coluna A é a numeração correspondente à posição do produto na coluna B.
@@ -70,21 +70,29 @@ function findColumn(headers, names) {
   return 0;
 }
 
-function valueForHeader(header, data) {
+function valueForHeader(header, data, index) {
   const aliases = {
     nome: 'nome', produto: 'nome', nomeproduto: 'nome',
     link: 'link', url: 'link', linkproduto: 'link',
     gramas: 'gramas', peso: 'gramas',
-    precorolo: 'precoRolo', precofilamento: 'precoRolo',
-    horas: 'horas', minutos: 'minutos', tempohoras: 'tempoHoras',
+    preco: 'precoSugerido', precorolo: 'precoRolo', precofilamento: 'precoRolo',
+    escala: undefined, esc: undefined,
+    tempo: 'tempo', horas: 'horas', minutos: 'minutos', tempohoras: 'tempoHoras',
+    custo: 'custoPeca', custoobjeto: 'custoPeca', objeto: undefined,
     maodeobra: 'maoDeObra', maquina: 'maquinaPorHora', manutencao: 'maquinaPorHora',
-    custoerro: 'custoErroPercentual', erro: 'custoErroPercentual',
-    embalagem: 'embalagem', outroscustos: 'outrosCustos', frete: 'frete',
-    custopeca: 'custoPeca', precosugerido: 'precoSugerido',
-    valorporhora: 'valorPorHora', lucro: 'lucroDesejado', canal: 'canal'
+    montagem: undefined, energia: 'energia',
+    embalagem: 'embalagem', embal: 'embalagem', outroscustos: 'outrosCustos', frete: 'frete',
+    custopeca: 'custoPeca', custototal: 'custoTotal', precosugerido: 'precoSugerido',
+    erro: 'custoErroPercentual', custoerro: 'custoErroPercentual',
+    valorporhora: 'valorPorHora', lucro: 'lucroDesejado', canal: 'canal',
+    valor: 'precoSugerido', percentualvenda: 'lucroDesejado'
   };
   const key = aliases[header];
-  return key ? (data[key] ?? '') : undefined;
+  if (key) return data[key] ?? '';
+  // Colunas repetidas da planilha antiga: preserva os valores existentes
+  // quando não há um cabeçalho específico para o campo.
+  if (header === 'preco' && index === 2) return data.precoSugerido ?? '';
+  return undefined;
 }
 
 function normalize(value) {
