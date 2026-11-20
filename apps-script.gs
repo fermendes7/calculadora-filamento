@@ -166,10 +166,10 @@ function reorderColumns_(sheet) {
   let last = Math.max(sheet.getLastColumn(), 1);
   let headers = sheet.getRange(HEADER_ROW, 1, 1, last).getDisplayValues()[0];
   for (let i = headers.length - 1; i >= 1; i--) {
-    if (normalize(headers[i]) === 'erro') sheet.deleteColumn(i + 1);
+    if (['erro', 'total'].includes(normalize(headers[i]))) sheet.deleteColumn(i + 1);
   }
 
-  const order = ['produto','preco','gramas','tempo','escala','nomedoarquivo','objeto','maodeobra','maoobra','maquina','energia','embal','outroscustostotais','custodeerro','custo','venda','percentualvenda','valor','desconto','total','frete','link'];
+  const order = ['produto','preco','gramas','tempo','escala','objeto','maodeobra','maoobra','maquina','energia','embal','outroscustostotais','custodeerro','custo','venda','percentualvenda','valor','desconto','frete','nomedoarquivo','link'];
   let target = 2;
   for (const wanted of order) {
     last = Math.max(sheet.getLastColumn(), 1);
