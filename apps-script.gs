@@ -26,13 +26,6 @@ function doPost(e) {
     sheet.getRange(HEADER_ROW, 11).setValue('Outros custos totais');
     headers[10] = 'Outros custos totais';
   }
-  // Organiza uma vez: depois do tempo ficam erro, máquina e energia.
-  if (headers.length >= 13 && normalize(headers[7]) === 'objeto' && normalize(headers[11]) === 'maquina' && normalize(headers[12]) === 'energia') {
-    sheet.moveColumns(sheet.getRange(1, 12, sheet.getMaxRows(), 1), 8);
-    sheet.moveColumns(sheet.getRange(1, 14, sheet.getMaxRows(), 1), 9);
-    lastColumn = Math.max(sheet.getLastColumn(), 1);
-    headers = sheet.getRange(HEADER_ROW, 1, 1, lastColumn).getValues()[0];
-  }
   const normalizedHeaders = headers.map(normalize);
   // Na planilha atual o cabeçalho está na linha 2 e o produto fica na coluna B.
   // O fallback precisa ser 2 para nunca gravar o nome na coluna Nº (A).
