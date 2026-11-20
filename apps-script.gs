@@ -30,6 +30,11 @@ function doPost(e) {
     sheet.getRange(HEADER_ROW, 11).setValue('Outros custos totais');
     headers[10] = 'Outros custos totais';
   }
+  ensurePercentualVendaAfterCusto_(sheet);
+  ensureHeader_(sheet, 'NOME DO ARQUIVO');
+  lastColumn = Math.max(sheet.getLastColumn(), 1);
+  headers = sheet.getRange(HEADER_ROW, 1, 1, lastColumn).getValues()[0];
+  linkColumn = headers.findIndex(h => normalize(h) === 'link') + 1;
   const normalizedHeaders = headers.map(normalize);
   // Na planilha atual o cabeçalho está na linha 2 e o produto fica na coluna B.
   // O fallback precisa ser 2 para nunca gravar o nome na coluna Nº (A).
@@ -82,6 +87,7 @@ function doPost(e) {
       SpreadsheetApp.newRichTextValue().setText(safeName).setLinkUrl(url).build()
     );
   }
+  if (!data.link && linkColumn) sheet.getRange(row, linkColumn).clearContent();
   SpreadsheetApp.flush();
   return json({ action: wasExisting ? 'updated' : 'added', row: row });
 }
@@ -101,6 +107,7 @@ function findColumn(headers, names) {
 function valueForHeader(header, data, index) {
   const aliases = {
     nome: 'nome', produto: 'nome', nomeproduto: 'nome',
+    nomedoarquivo: 'nomeArquivo', arquivo: 'nomeArquivo', file: 'nomeArquivo', filename: 'nomeArquivo',
     link: 'link', url: 'link', linkproduto: 'link',
     gramas: 'gramas', peso: 'gramas', objeto: 'objetos', objetos: 'objetos',
     preco: 'precoSugerido', precorolo: 'precoRolo', precofilamento: 'precoRolo',
@@ -124,6 +131,22 @@ function valueForHeader(header, data, index) {
   // quando não há um cabeçalho específico para o campo.
   if (header === 'preco' && index === 2) return data.precoSugerido ?? '';
   return undefined;
+}
+
+function ensurePercentualVendaAfterCusto_(sheet) {
+  const last = Math.max(sheet.getLastColumn(), 1);
+  const headers = sheet.getRange(HEADER_ROW, 1, 1, last).getDisplayValues()[0];
+  const custo = headers.findIndex(h => normalize(h) === 'custo') + 1;
+  const percentual = headers.findIndex(h => normalize(h) === 'percentualvenda') + 1;
+  if (!custo || !percentual || percentual === custo + 1) return;
+  sheet.moveColumns(sheet.getRange(1, percentual, sheet.getMaxRows(), 1), custo + 1);
+}
+
+function ensureHeader_(sheet, label) {
+  const last = Math.max(sheet.getLastColumn(), 1);
+  const headers = sheet.getRange(HEADER_ROW, 1, 1, last).getDisplayValues()[0];
+  if (headers.some(h => normalize(h) === normalize(label))) return;
+  sheet.getRange(HEADER_ROW, last + 1).setValue(label);
 }
 
 function normalize(value) {

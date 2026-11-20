@@ -37,6 +37,7 @@ const salePrice = document.querySelector('#salePrice');
 const hourlyValue = document.querySelector('#hourlyValue');
 const productName = document.querySelector('#productName');
 const productLink = document.querySelector('#productLink');
+const fileName = document.querySelector('#fileName');
 const saveStatus = document.querySelector('#saveStatus');
 const saveProductButton = document.querySelector('#saveProduct');
 const deleteProductButton = document.querySelector('#deleteProduct');
@@ -192,6 +193,7 @@ saveProductButton.addEventListener('click', async () => {
   const payload = {
     nome: name,
     link: productLink.value.trim(),
+    nomeArquivo: fileName.value.trim(),
     gramas: (Number(usedWeight.value) || 0) * quantity,
     precoRolo: Number(price.value) || 0,
     horas: Number(printHours.value) || 0,
