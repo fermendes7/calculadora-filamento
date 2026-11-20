@@ -111,7 +111,7 @@ function valueForHeader(header, data, index) {
     link: 'link', url: 'link', linkproduto: 'link',
     gramas: 'gramas', peso: 'gramas', objeto: 'objetos', objetos: 'objetos',
     preco: 'precoSugerido', precorolo: 'precoRolo', precofilamento: 'precoRolo',
-    escala: undefined, esc: undefined,
+    escala: 'escala', esc: 'escala',
     tempo: 'tempo', horas: 'horas', minutos: 'minutos', tempohoras: 'tempoHoras',
     custo: 'custoPeca', custoobjeto: 'custoPeca',
     // A coluna "Custo de erro" da planilha representa a taxa percentual (ex.: 20%).
@@ -123,7 +123,7 @@ function valueForHeader(header, data, index) {
     custopeca: 'custoPeca', custototal: 'custoTotal', precosugerido: 'precoSugerido',
     erro: 'erroValor', custoerro: 'custoErroPercentual',
     valorporhora: 'valorPorHora', lucro: 'lucroDesejado', canal: 'canal',
-    valor: 'precoSugerido', percentualvenda: 'lucroDesejado'
+    valor: 'precoSugerido', percentualvenda: 'lucroDesejado', desconto: 'discountPercent', total: 'precoSugerido'
   };
   const key = aliases[header];
   if (key) return data[key] ?? '';
@@ -169,7 +169,7 @@ function reorderColumns_(sheet) {
     if (normalize(headers[i]) === 'erro') sheet.deleteColumn(i + 1);
   }
 
-  const order = ['produto','preco','gramas','tempo','objeto','maoobra','maodeobra','maquina','energia','embal','outroscustostotais','custodeerro','lucrodesejado','lucro','frete','custo','valor','percentualvenda','total'];
+  const order = ['produto','preco','gramas','tempo','escala','nomedoarquivo','objeto','maoobra','maodeobra','maquina','energia','embal','outroscustostotais','custodeerro','custo','percentualvenda','valor','desconto','total','frete'];
   let target = 2;
   for (const wanted of order) {
     last = Math.max(sheet.getLastColumn(), 1);
