@@ -31,9 +31,12 @@ function doPost(e) {
   // O fallback precisa ser 2 para nunca gravar o nome na coluna Nº (A).
   const nameColumn = 2;
   const values = sheet.getDataRange().getDisplayValues();
+  const formulas = sheet.getDataRange().getFormulas();
   let row = -1;
   for (let i = HEADER_ROW; i < values.length; i++) {
-    if (normalize(values[i][nameColumn - 1]) === normalize(data.nome)) {
+    const displayName = normalize(values[i][nameColumn - 1]);
+    const formulaName = normalize(formulas[i][nameColumn - 1]);
+    if (displayName === normalize(data.nome) || formulaName.includes(normalize(data.nome))) {
       row = i + 1;
       break;
     }
