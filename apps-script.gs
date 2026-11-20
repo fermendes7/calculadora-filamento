@@ -9,6 +9,7 @@ function doPost(e) {
   const data = JSON.parse(raw);
   const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
   if (!sheet) return json({ error: 'Aba PRODUTOS não encontrada.' });
+  if (data.acao === 'reordenar') return reorderColumns_(sheet);
 
   let lastColumn = Math.max(sheet.getLastColumn(), 1);
   let headers = sheet.getRange(HEADER_ROW, 1, 1, lastColumn).getValues()[0];
@@ -101,7 +102,7 @@ function valueForHeader(header, data, index) {
     custodeerro: 'custoErroPercentual',
     maodeobra: 'maoDeObra', maoobra: 'maoDeObra', maquina: 'maquinaTotal', manutencao: 'maquinaTotal',
     montagem: 'outrosCustos', energia: 'energia',
-    embalagem: 'embalagem', embal: 'embalagem', outroscustos: 'outrosCustos', outrocustostotais: 'outrosCustos', frete: 'frete',
+    embalagem: 'embalagem', embal: 'embalagem', outroscustos: 'outrosCustos', outroscustostotais: 'outrosCustos', outrocustostotais: 'outrosCustos', frete: 'frete',
     custopeca: 'custoPeca', custototal: 'custoTotal', precosugerido: 'precoSugerido',
     erro: 'erroValor', custoerro: 'custoErroPercentual',
     valorporhora: 'valorPorHora', lucro: 'lucroDesejado', canal: 'canal',
@@ -121,4 +122,22 @@ function normalize(value) {
 
 function json(value) {
   return ContentService.createTextOutput(JSON.stringify(value)).setMimeType(ContentService.MimeType.JSON);
+}
+
+function reorderColumns_(sheet) {
+  const order = ['produto','gramas','preco','tempo','objeto','maodeobra','maquina','energia','embal','outroscustostotais','outrocustostotais','custodeerro','custo','erro','frete','valor','percentualvenda','total'];
+  let target = 2;
+  for (const wanted of order) {
+    const last = Math.max(sheet.getLastColumn(), 1);
+    const headers = sheet.getRange(HEADER_ROW, 1, 1, last).getDisplayValues()[0];
+    let from = 0;
+    for (let i = 1; i < headers.length; i++) {
+      if (normalize(headers[i]) === wanted) { from = i + 1; break; }
+    }
+    if (!from) continue;
+    if (from !== target) sheet.moveColumns(sheet.getRange(1, from, sheet.getMaxRows(), 1), target);
+    target++;
+  }
+  SpreadsheetApp.flush();
+  return json({ ok: true, action: 'reordered', lastColumn: sheet.getLastColumn() });
 }
