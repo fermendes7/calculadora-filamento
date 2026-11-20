@@ -10,8 +10,14 @@ function doPost(e) {
   const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
   if (!sheet) return json({ error: 'Aba PRODUTOS não encontrada.' });
 
-  const lastColumn = Math.max(sheet.getLastColumn(), 1);
-  const headers = sheet.getRange(HEADER_ROW, 1, 1, lastColumn).getValues()[0];
+  let lastColumn = Math.max(sheet.getLastColumn(), 1);
+  let headers = sheet.getRange(HEADER_ROW, 1, 1, lastColumn).getValues()[0];
+  const hasLinkColumn = headers.some(header => ['link', 'url', 'linkproduto'].includes(normalize(header)));
+  if (data.link && !hasLinkColumn) {
+    lastColumn += 1;
+    sheet.getRange(HEADER_ROW, lastColumn).setValue('LINK');
+    headers = sheet.getRange(HEADER_ROW, 1, 1, lastColumn).getValues()[0];
+  }
   const normalizedHeaders = headers.map(normalize);
   // Na planilha atual o cabeçalho está na linha 2 e o produto fica na coluna B.
   // O fallback precisa ser 2 para nunca gravar o nome na coluna Nº (A).
@@ -67,6 +73,7 @@ function findColumn(headers, names) {
 function valueForHeader(header, data) {
   const aliases = {
     nome: 'nome', produto: 'nome', nomeproduto: 'nome',
+    link: 'link', url: 'link', linkproduto: 'link',
     gramas: 'gramas', peso: 'gramas',
     precorolo: 'precoRolo', precofilamento: 'precoRolo',
     horas: 'horas', minutos: 'minutos', tempohoras: 'tempoHoras',

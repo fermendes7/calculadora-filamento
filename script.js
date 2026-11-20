@@ -12,8 +12,6 @@ const breakdownLabor = document.querySelector('#breakdownLabor');
 const pieceMachine = document.querySelector('#pieceMachine');
 const pieceTotal = document.querySelector('#pieceTotal');
 const pieceFormula = document.querySelector('#pieceFormula');
-const calculateFilamentButton = document.querySelector('#calculateFilament');
-const calculatePieceButton = document.querySelector('#calculatePiece');
 const packagingCost = document.querySelector('#packagingCost');
 const otherCosts = document.querySelector('#otherCosts');
 const machineCostPerHour = document.querySelector('#machineCostPerHour');
@@ -24,7 +22,6 @@ const extraOtherCosts = document.querySelector('#extraOtherCosts');
 const extraError = document.querySelector('#extraError');
 const finalPrice = document.querySelector('#finalPrice');
 const extraFormula = document.querySelector('#extraFormula');
-const calculateExtraButton = document.querySelector('#calculateExtra');
 const priceType = document.querySelector('#priceType');
 const pricingMode = document.querySelector('#pricingMode');
 const desiredProfit = document.querySelector('#desiredProfit');
@@ -38,14 +35,14 @@ const salePriceInput = document.querySelector('#salePriceInput');
 const salePrice = document.querySelector('#salePrice');
 const hourlyValue = document.querySelector('#hourlyValue');
 const productName = document.querySelector('#productName');
+const productLink = document.querySelector('#productLink');
 const saveStatus = document.querySelector('#saveStatus');
 const saveProductButton = document.querySelector('#saveProduct');
 const deleteProductButton = document.querySelector('#deleteProduct');
 
 // Cole aqui a URL do Web App do Google Apps Script ligado à planilha.
-const SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzmCeviiISdddT8jLIuBNhKhYIA5qAWB5jJS73tBW0et8nsbNvzlGgaiBDmCc--eXyS/exec';
+const SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwpMTUiokmUNRhns1m1bl7BxYHSs7-KeRZpi3rb7tjJBSG1J5Bf5M3Zrt_cWDrxL-t3/exec';
 const profitFormula = document.querySelector('#profitFormula');
-const calculateProfitButton = document.querySelector('#calculateProfit');
 const shippingCost = document.querySelector('#shippingCost');
 const fixedFee = document.querySelector('#fixedFee');
 const discountPercent = document.querySelector('#discountPercent');
@@ -159,11 +156,6 @@ function updateAll() {
   calculateProfit();
 }
 
-calculateFilamentButton.addEventListener('click', updateAll);
-calculatePieceButton.addEventListener('click', updateAll);
-calculateExtraButton.addEventListener('click', updateAll);
-calculateProfitButton.addEventListener('click', updateAll);
-
 saveProductButton.addEventListener('click', async () => {
   const name = productName.value.trim();
   if (!name) {
@@ -179,6 +171,7 @@ saveProductButton.addEventListener('click', async () => {
   const totalHours = (Number(printHours.value) || 0) + (Math.min(59, Math.max(0, Number(printMinutes.value) || 0)) / 60);
   const payload = {
     nome: name,
+    link: productLink.value.trim(),
     gramas: Number(usedWeight.value) || 0,
     precoRolo: Number(price.value) || 0,
     horas: Number(printHours.value) || 0,
@@ -252,3 +245,4 @@ priceType.addEventListener('change', () => {
 });
 pricingMode.addEventListener('change', updateAll);
 updateAll();
+

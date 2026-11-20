@@ -35,7 +35,6 @@
       </div>
 
       <div class="formula" id="formula">R$ 95,00 ÷ 1.000 g × 20 g</div>
-      <button class="calculate-button" id="calculateFilament" type="button">Calcular filamento</button>
     </section>
 
     <section class="calculator-card piece-card" aria-label="Calculadora de custo da peça">
@@ -72,7 +71,6 @@
         <div><span class="result-label">Custo total da peça</span><strong id="pieceTotal">R$ 2,24</strong></div>
       </div>
       <div class="formula" id="pieceFormula">Filamento + (0,14 kW × 2 h × R$ 0,85) + mão de obra</div>
-      <button class="calculate-button" id="calculatePiece" type="button">Calcular custo por peça</button>
     </section>
 
     <section class="calculator-card extra-card" aria-label="Calculadora de outros custos">
@@ -106,7 +104,6 @@
         <div><span class="result-label">Preço final com custos adicionais</span><strong id="finalPrice">R$ 2,14</strong></div>
       </div>
       <div class="formula" id="extraFormula">Custo por peça (inclui mão de obra) + embalagem + outros custos + máquina/manutenção + custo de erro</div>
-      <button class="calculate-button" id="calculateExtra" type="button">Calcular outros custos</button>
     </section>
 
     <section class="calculator-card profit-card" aria-label="Calculadora de taxas e preço de venda">
@@ -172,7 +169,6 @@
         <div class="hourly-result"><span class="result-label">Valor por hora de trabalho</span><strong id="hourlyValue">R$ 0,00</strong></div>
       </div>
       <div class="formula" id="profitFormula">Preço sugerido = custos ÷ (1 − comissões − desconto)</div>
-      <button class="calculate-button" id="calculateProfit" type="button">Calcular preço de venda</button>
     </section>
 
     <section class="tips">
@@ -192,6 +188,10 @@
         Nome do produto
         <input id="productName" type="text" placeholder="Ex.: Snoop de note" autocomplete="off" />
       </label>
+      <label>
+        Link do produto
+        <input id="productLink" type="url" placeholder="https://..." autocomplete="url" />
+      </label>
       <p class="save-status" id="saveStatus" aria-live="polite"></p>
       <div class="save-actions">
         <button class="calculate-button" id="saveProduct" type="button">Salvar produto</button>
@@ -199,6 +199,7 @@
       </div>
     </section>
   </main>
-  <script src="script.js?v=38"></script>
+  <script src="script.js?v=40"></script>
 </body>
 </html>
+
