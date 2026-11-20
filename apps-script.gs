@@ -18,15 +18,26 @@ function doPost(e) {
     sheet.getRange(HEADER_ROW, lastColumn).setValue('LINK');
     headers = sheet.getRange(HEADER_ROW, 1, 1, lastColumn).getValues()[0];
   }
-  if (headers.length >= 11 && normalize(headers[10]) === 'montagem') {
-    sheet.getRange(HEADER_ROW, 11).setValue('CUSTOS ADICIONAIS');
-    headers[10] = 'CUSTOS ADICIONAIS';
+  if (headers.length >= 7 && normalize(headers[6]) === 'custo') {
+    sheet.getRange(HEADER_ROW, 7).setValue('Custo de erro');
+    headers[6] = 'Custo de erro';
+  }
+  if (headers.length >= 11 && ['montagem', 'custosadicionais'].includes(normalize(headers[10]))) {
+    sheet.getRange(HEADER_ROW, 11).setValue('Outros custos totais');
+    headers[10] = 'Outros custos totais';
+  }
+  // Organiza uma vez: depois do tempo ficam erro, máquina e energia.
+  if (headers.length >= 13 && normalize(headers[7]) === 'objeto' && normalize(headers[11]) === 'maquina' && normalize(headers[12]) === 'energia') {
+    sheet.moveColumns(sheet.getRange(1, 12, sheet.getMaxRows(), 1), 8);
+    sheet.moveColumns(sheet.getRange(1, 14, sheet.getMaxRows(), 1), 9);
+    lastColumn = Math.max(sheet.getLastColumn(), 1);
+    headers = sheet.getRange(HEADER_ROW, 1, 1, lastColumn).getValues()[0];
   }
   const normalizedHeaders = headers.map(normalize);
   // Na planilha atual o cabeçalho está na linha 2 e o produto fica na coluna B.
   // O fallback precisa ser 2 para nunca gravar o nome na coluna Nº (A).
   const nameColumn = 2;
-  const values = sheet.getDataRange().getValues();
+  const values = sheet.getDataRange().getDisplayValues();
   let row = -1;
   for (let i = HEADER_ROW; i < values.length; i++) {
     if (normalize(values[i][nameColumn - 1]) === normalize(data.nome)) {
@@ -59,6 +70,12 @@ function doPost(e) {
   // A coluna A é a numeração correspondente à posição do produto na coluna B.
   if (output.length >= 1) output[0] = row - HEADER_ROW;
   sheet.getRange(row, 1, 1, output.length).setValues([output]);
+  sheet.getRange(row, 1, 1, output.length).setFontWeight('bold');
+  if (data.link) {
+    const safeUrl = String(data.link).replace(/"/g, '""');
+    const safeName = String(data.nome).replace(/"/g, '""');
+    sheet.getRange(row, nameColumn).setFormula(`=HYPERLINK("${safeUrl}","${safeName}")`);
+  }
   return json({ action: wasExisting ? 'updated' : 'added', row: row });
 }
 
@@ -75,37 +92,17 @@ function findColumn(headers, names) {
 }
 
 function valueForHeader(header, data, index) {
-  // Layout da aba PRODUTOS: escreve cada cálculo na coluna correspondente.
-  const byColumn = {
-    1: data.nome,
-    2: data.precoSugerido,
-    4: data.gramas,
-    5: data.tempo,
-    6: data.custoBase + data.erroValor,
-    8: data.embalagem,
-    9: data.maoDeObra,
-    10: data.custosAdicionais,
-    11: data.maquinaTotal,
-    12: data.energia,
-    13: data.custoTotal,
-    14: data.custoErroPercentual,
-    15: data.precoSugerido,
-    16: data.lucroDesejado,
-    17: data.precoSugerido,
-    18: data.frete
-  };
-  if (Object.prototype.hasOwnProperty.call(byColumn, index)) return byColumn[index] ?? '';
   const aliases = {
     nome: 'nome', produto: 'nome', nomeproduto: 'nome',
     link: 'link', url: 'link', linkproduto: 'link',
-    gramas: 'gramas', peso: 'gramas',
+    gramas: 'gramas', peso: 'gramas', objeto: 'objetos', objetos: 'objetos',
     preco: 'precoSugerido', precorolo: 'precoRolo', precofilamento: 'precoRolo',
     escala: undefined, esc: undefined,
     tempo: 'tempo', horas: 'horas', minutos: 'minutos', tempohoras: 'tempoHoras',
-    custo: 'custoPeca', custoobjeto: 'custoPeca', objeto: undefined,
-    maodeobra: 'maoDeObra', maquina: 'maquinaPorHora', manutencao: 'maquinaPorHora',
-    montagem: undefined, energia: 'energia',
-    embalagem: 'embalagem', embal: 'embalagem', outroscustos: 'outrosCustos', frete: 'frete',
+    custo: 'custoPeca', custoobjeto: 'custoPeca', custodeerro: 'erroValor',
+    maodeobra: 'maoDeObra', maquina: 'maquinaTotal', manutencao: 'maquinaTotal',
+    montagem: 'outrosCustos', energia: 'energia',
+    embalagem: 'embalagem', embal: 'embalagem', outroscustos: 'outrosCustos', outrocustostotais: 'outrosCustos', frete: 'frete',
     custopeca: 'custoPeca', custototal: 'custoTotal', precosugerido: 'precoSugerido',
     erro: 'custoErroPercentual', custoerro: 'custoErroPercentual',
     valorporhora: 'valorPorHora', lucro: 'lucroDesejado', canal: 'canal',

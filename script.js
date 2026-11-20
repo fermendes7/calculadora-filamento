@@ -5,6 +5,7 @@ const unitCost = document.querySelector('#unitCost');
 const formula = document.querySelector('#formula');
 const printHours = document.querySelector('#printHours');
 const printMinutes = document.querySelector('#printMinutes');
+const objectCount = document.querySelector('#objectCount');
 const laborCost = document.querySelector('#laborCost');
 const breakdownFilament = document.querySelector('#breakdownFilament');
 const breakdownEnergy = document.querySelector('#breakdownEnergy');
@@ -41,7 +42,7 @@ const saveProductButton = document.querySelector('#saveProduct');
 const deleteProductButton = document.querySelector('#deleteProduct');
 
 // Cole aqui a URL do Web App do Google Apps Script ligado à planilha.
-const SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzOtr4kW0eK3cDKxiAiq5mGVhvViOJHU-HPJSdgl3Gy1p7HrKASJNMb3l7K1g0MxZS8/exec';
+const SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwCq0Z-nkqrCBMPiSg6IIqqiLPY4m2C4fMsMXQNUaeD7aBNUIDX8kgFoLQh4wH_7Abd/exec';
 const profitFormula = document.querySelector('#profitFormula');
 const shippingCost = document.querySelector('#shippingCost');
 const fixedFee = document.querySelector('#fixedFee');
@@ -62,20 +63,21 @@ function calculate() {
 }
 
 function calculatePiece() {
+  const quantity = Math.max(1, Math.floor(Number(objectCount.value) || 1));
   const printerPower = 0.14;
   const energyRate = 0.85;
   const paid = Number(price.value) || 0;
   const total = 1000;
   const grams = Number(usedWeight.value) || 0;
-  const filament = total > 0 ? (paid / total) * grams : 0;
+  const filament = total > 0 ? (paid / total) * grams * quantity : 0;
   const power = printerPower;
   const rate = energyRate;
   const hours = Number(printHours.value) || 0;
   const minutes = Math.min(59, Math.max(0, Number(printMinutes.value) || 0));
-  const labor = Number(laborCost.value) || 0;
+  const labor = (Number(laborCost.value) || 0) * quantity;
   const totalHours = hours + minutes / 60;
-  const energy = power * totalHours * rate;
-  const machine = (Number(machineCostPerHour.value) || 0) * totalHours;
+  const energy = power * totalHours * rate * quantity;
+  const machine = (Number(machineCostPerHour.value) || 0) * totalHours * quantity;
   breakdownFilament.textContent = money(filament);
   breakdownEnergy.textContent = money(energy);
   breakdownLabor.textContent = money(labor);
@@ -85,18 +87,19 @@ function calculatePiece() {
 }
 
 function calculateExtra() {
+  const quantity = Math.max(1, Math.floor(Number(objectCount.value) || 1));
   const paid = Number(price.value) || 0;
   const grams = Number(usedWeight.value) || 0;
-  const filament = (paid / 1000) * grams;
+  const filament = (paid / 1000) * grams * quantity;
   const power = 0.14;
   const rate = 0.85;
   const hours = Number(printHours.value) || 0;
   const minutes = Math.min(59, Math.max(0, Number(printMinutes.value) || 0));
-  const labor = Number(laborCost.value) || 0;
-  const pieceTotalValue = filament + (power * (hours + minutes / 60) * rate) + labor;
-  const packaging = Number(packagingCost.value) || 0;
-  const others = Number(otherCosts.value) || 0;
-  const machine = Number(machineCostPerHour.value) * (hours + minutes / 60) || 0;
+  const labor = (Number(laborCost.value) || 0) * quantity;
+  const pieceTotalValue = filament + (power * (hours + minutes / 60) * rate * quantity) + labor;
+  const packaging = (Number(packagingCost.value) || 0) * quantity;
+  const others = (Number(otherCosts.value) || 0) * quantity;
+  const machine = Number(machineCostPerHour.value) * (hours + minutes / 60) * quantity || 0;
   const errorPercent = Math.min(100, Math.max(0, Number(errorCost.value) || 0));
   const totalPieceWithMachine = pieceTotalValue + machine;
   const error = totalPieceWithMachine * (errorPercent / 100);
@@ -110,12 +113,13 @@ function calculateExtra() {
 }
 
 function calculateProfit() {
+  const quantity = Math.max(1, Math.floor(Number(objectCount.value) || 1));
   const paid = Number(price.value) || 0;
   const grams = Number(usedWeight.value) || 0;
-  const pieceCost = (paid / 1000) * grams + (0.14 * ((Number(printHours.value) || 0) + (Math.min(59, Math.max(0, Number(printMinutes.value) || 0)) / 60)) * 0.85) + (Number(laborCost.value) || 0);
-  const packaging = Number(packagingCost.value) || 0;
-  const others = Number(otherCosts.value) || 0;
-  const machine = Number(machineCostPerHour.value) * ((Number(printHours.value) || 0) + (Math.min(59, Math.max(0, Number(printMinutes.value) || 0)) / 60)) || 0;
+  const pieceCost = ((paid / 1000) * grams + (0.14 * ((Number(printHours.value) || 0) + (Math.min(59, Math.max(0, Number(printMinutes.value) || 0)) / 60)) * 0.85 + (Number(laborCost.value) || 0)) * quantity;
+  const packaging = (Number(packagingCost.value) || 0) * quantity;
+  const others = (Number(otherCosts.value) || 0) * quantity;
+  const machine = Number(machineCostPerHour.value) * ((Number(printHours.value) || 0) + (Math.min(59, Math.max(0, Number(printMinutes.value) || 0)) / 60)) * quantity || 0;
   const errorPercent = Math.min(100, Math.max(0, Number(errorCost.value) || 0));
   const pieceTotalValue = pieceCost;
   const totalPieceWithMachine = pieceTotalValue + machine;
@@ -169,10 +173,13 @@ saveProductButton.addEventListener('click', async () => {
   }
   updateAll();
   const totalHours = (Number(printHours.value) || 0) + (Math.min(59, Math.max(0, Number(printMinutes.value) || 0)) / 60);
-  const filamentValue = (Number(price.value) || 0) / 1000 * (Number(usedWeight.value) || 0);
-  const energyValue = 0.14 * totalHours * 0.85;
-  const machineValue = (Number(machineCostPerHour.value) || 0) * totalHours;
-  const laborValue = Number(laborCost.value) || 0;
+  const quantity = Math.max(1, Math.floor(Number(objectCount.value) || 1));
+  const setupMinutes = 10;
+  const adjustedTotalHours = totalHours + setupMinutes / 60;
+  const filamentValue = (Number(price.value) || 0) / 1000 * (Number(usedWeight.value) || 0) * quantity;
+  const energyValue = 0.14 * adjustedTotalHours * 0.85 * quantity;
+  const machineValue = (Number(machineCostPerHour.value) || 0) * adjustedTotalHours * quantity;
+  const laborValue = (Number(laborCost.value) || 0) * quantity;
   const pieceBaseValue = filamentValue + energyValue + laborValue + machineValue;
   const errorPercentValue = Math.min(100, Math.max(0, Number(errorCost.value) || 0));
   const errorValue = pieceBaseValue * errorPercentValue / 100;
@@ -181,19 +188,21 @@ saveProductButton.addEventListener('click', async () => {
   const payload = {
     nome: name,
     link: productLink.value.trim(),
-    gramas: Number(usedWeight.value) || 0,
+    gramas: (Number(usedWeight.value) || 0) * quantity,
     precoRolo: Number(price.value) || 0,
     horas: Number(printHours.value) || 0,
     minutos: Number(printMinutes.value) || 0,
-    tempoHoras: totalHours,
-    tempo: `${String(Number(printHours.value) || 0).padStart(2, '0')}:${String(Number(printMinutes.value) || 0).padStart(2, '0')}:00`,
+    tempoHoras: adjustedTotalHours,
+    tempo: `${String(Math.floor(adjustedTotalHours)).padStart(2, '0')}:${String(Math.round((adjustedTotalHours % 1) * 60)).padStart(2, '0')}:00`,
+    objetos: quantity,
+    tempoPreparacaoMinutos: setupMinutes,
     energia: energyValue,
     filamento: filamentValue,
     maquinaTotal: machineValue,
     erroValor: errorValue,
     custosAdicionais: additionalValue,
     custoBase: pieceBaseValue,
-    maoDeObra: Number(laborCost.value) || 0,
+    maoDeObra: laborValue,
     maquinaPorHora: Number(machineCostPerHour.value) || 0,
     custoErroPercentual: Number(errorCost.value) || 0,
     embalagem: Number(packagingCost.value) || 0,
@@ -262,6 +271,7 @@ priceType.addEventListener('change', () => {
 });
 pricingMode.addEventListener('change', updateAll);
 updateAll();
+
 
 
 
