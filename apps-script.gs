@@ -70,7 +70,7 @@ function doPost(e) {
   if (data.link) {
     const safeUrl = String(data.link).replace(/"/g, '""');
     const safeName = String(data.nome).replace(/"/g, '""');
-    sheet.getRange(row, nameColumn).setFormula(`=HYPERLINK("${safeUrl}","${safeName}")`);
+    sheet.getRange(row, nameColumn).setFormula(`=HYPERLINK("${safeUrl}";"${safeName}")`);
   }
   return json({ action: wasExisting ? 'updated' : 'added', row: row });
 }
