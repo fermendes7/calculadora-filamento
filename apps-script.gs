@@ -96,7 +96,7 @@ function valueForHeader(header, data, index) {
     escala: undefined, esc: undefined,
     tempo: 'tempo', horas: 'horas', minutos: 'minutos', tempohoras: 'tempoHoras',
     custo: 'custoPeca', custoobjeto: 'custoPeca', custodeerro: 'erroValor',
-    maodeobra: 'maoDeObra', maquina: 'maquinaTotal', manutencao: 'maquinaTotal',
+    maodeobra: 'maoDeObra', maoobra: 'maoDeObra', maquina: 'maquinaTotal', manutencao: 'maquinaTotal',
     montagem: 'outrosCustos', energia: 'energia',
     embalagem: 'embalagem', embal: 'embalagem', outroscustos: 'outrosCustos', outrocustostotais: 'outrosCustos', frete: 'frete',
     custopeca: 'custoPeca', custototal: 'custoTotal', precosugerido: 'precoSugerido',
