@@ -116,7 +116,8 @@ function calculateProfit() {
   const quantity = Math.max(1, Math.floor(Number(objectCount.value) || 1));
   const paid = Number(price.value) || 0;
   const grams = Number(usedWeight.value) || 0;
-  const pieceCost = ((paid / 1000) * grams + (0.14 * ((Number(printHours.value) || 0) + (Math.min(59, Math.max(0, Number(printMinutes.value) || 0)) / 60)) * 0.85 + (Number(laborCost.value) || 0)) * quantity;
+  const printTimeHours = (Number(printHours.value) || 0) + (Math.min(59, Math.max(0, Number(printMinutes.value) || 0)) / 60);
+  const pieceCost = (((paid / 1000) * grams) + (0.14 * printTimeHours * 0.85) + (Number(laborCost.value) || 0)) * quantity;
   const packaging = (Number(packagingCost.value) || 0) * quantity;
   const others = (Number(otherCosts.value) || 0) * quantity;
   const machine = Number(machineCostPerHour.value) * ((Number(printHours.value) || 0) + (Math.min(59, Math.max(0, Number(printMinutes.value) || 0)) / 60)) * quantity || 0;
