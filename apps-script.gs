@@ -10,6 +10,7 @@ function doPost(e) {
   const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
   if (!sheet) return json({ error: 'Aba PRODUTOS não encontrada.' });
   if (data.acao === 'reordenar') return reorderColumns_(sheet);
+  if (data.acao === 'corrigirErros') return corrigirErros_(sheet);
 
   let lastColumn = Math.max(sheet.getLastColumn(), 1);
   let headers = sheet.getRange(HEADER_ROW, 1, 1, lastColumn).getValues()[0];
@@ -104,6 +105,41 @@ function doPost(e) {
 
 function doGet() {
   return json({ ok: true, message: 'Integração da calculadora ativa.' });
+}
+
+function corrigirErros_(sheet) {
+  const lastRow = sheet.getLastRow();
+  const lastColumn = sheet.getLastColumn();
+  const headers = sheet.getRange(HEADER_ROW, 1, 1, lastColumn).getDisplayValues()[0];
+  const costNames = ['custo', 'valor', 'total', 'frete', 'custodeerro', 'outroscustostotais'];
+  const costColumns = headers.map((h, i) => costNames.includes(normalize(h)) ? i + 1 : 0).filter(Boolean);
+  const linkColumn = headers.findIndex(h => normalize(h) === 'link') + 1;
+  if (lastRow > HEADER_ROW && costColumns.length) {
+    for (const col of costColumns) {
+      const range = sheet.getRange(HEADER_ROW + 1, col, lastRow - HEADER_ROW, 1);
+      const values = range.getDisplayValues();
+      for (let i = 0; i < values.length; i++) {
+        if (String(values[i][0]).includes('#REF!') || String(values[i][0]).includes('#ERROR!')) {
+          range.getCell(i + 1, 1).clearContent();
+        }
+      }
+    }
+  }
+  if (linkColumn && lastRow > HEADER_ROW) {
+    const range = sheet.getRange(HEADER_ROW + 1, linkColumn, lastRow - HEADER_ROW, 1);
+    const values = range.getDisplayValues();
+    for (let i = 0; i < values.length; i++) {
+      const url = String(values[i][0] || '').trim();
+      if (/^https?:\/\//i.test(url)) {
+        range.getCell(i + 1, 1).setRichTextValue(
+          SpreadsheetApp.newRichTextValue().setText('Abrir link').setLinkUrl(url).build()
+        );
+      }
+    }
+    sheet.setColumnWidth(linkColumn, 95);
+  }
+  SpreadsheetApp.flush();
+  return json({ ok: true, action: 'errors_fixed', links_shortened: Boolean(linkColumn) });
 }
 
 function findColumn(headers, names) {
