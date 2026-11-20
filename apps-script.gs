@@ -127,6 +127,9 @@ function json(value) {
 function reorderColumns_(sheet) {
   // Remove a coluna antiga "ERRO". O percentual já fica em "Custo de erro"
   // e o valor em reais é somado ao custo final, sem uma segunda coluna.
+  // A faixa verde da linha 1 tem mesclagens antigas; desfaça somente essa
+  // linha para permitir mover as colunas sem alterar os dados das linhas.
+  sheet.getRange(1, 1, 1, sheet.getMaxColumns()).breakApart();
   let last = Math.max(sheet.getLastColumn(), 1);
   let headers = sheet.getRange(HEADER_ROW, 1, 1, last).getDisplayValues()[0];
   for (let i = headers.length - 1; i >= 1; i--) {
