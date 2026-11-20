@@ -52,6 +52,10 @@ h2 { font-size: 1rem; margin: 0 0 9px; }
 .tips p { color: #657184; font-size: .9rem; line-height: 1.55; margin: 7px 0; }
 .tips .note { color: #3867d6; }
 .save-card { margin-top: 22px; }
+.save-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px 20px; }
+.save-fields .link-field { grid-column:1 / -1; }
+.save-fields small { display:block; color:#3867d6; font-size:.78rem; margin-top:4px; }
+.save-fields .link-field input { border-color:#3867d6; box-shadow:0 0 0 3px #3867d61c; }
 .save-card > label { max-width: 420px; }
 .save-card input[type="text"] { background: #f4f6fa; border: 1px solid #e3e8f0; border-radius: 12px; padding: 13px 14px; }
 .save-actions { display: grid; gap: 12px; }
@@ -59,3 +63,4 @@ h2 { font-size: 1rem; margin: 0 0 9px; }
 .save-status { color: #3867d6; font-size: .9rem; min-height: 1.4em; text-align: center; }
 .calculate-button:disabled { cursor: wait; filter: grayscale(.25); opacity: .7; transform: none; }
 @media (max-width: 620px) { .page-shell { padding-top: 36px; } .fields, .piece-fields, .profit-fields { grid-template-columns: 1fr; gap: 14px; } .piece-fields .secondary-field { grid-column: auto; grid-row: auto; } .result { align-items: start; flex-direction: column; gap: 22px; } .unit-cost { text-align: left; } .section-heading { gap: 12px; } .section-heading h2 { font-size: 1.35rem; } .breakdown { grid-template-columns: 1fr; } }
+@media (max-width:620px) { .save-fields { grid-template-columns:1fr; } .save-fields .link-field { grid-column:auto; } }

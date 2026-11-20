@@ -188,13 +188,14 @@
           <h2>Salvar produto</h2>
         </div>
       </div>
+      <div class="save-fields">
       <label>
         Nome do produto
         <input id="productName" type="text" placeholder="Ex.: Snoop de note" autocomplete="off" />
       </label>
-      <label>
-        Link do produto
-        <input id="productLink" type="url" placeholder="https://..." autocomplete="url" />
+      <label class="link-field">
+        Link do produto <small>será aplicado ao nome na planilha</small>
+        <input id="productLink" type="url" placeholder="Cole aqui o link completo: https://..." autocomplete="url" />
       </label>
       <label>
         Nome do arquivo
@@ -204,6 +205,7 @@
         Escala (informativa)
         <input id="scaleInfo" type="text" placeholder="Ex.: 100%" value="100%" autocomplete="off" />
       </label>
+      </div>
       <p class="save-status" id="saveStatus" aria-live="polite"></p>
       <div class="save-actions">
         <button class="calculate-button" id="saveProduct" type="button">Salvar produto</button>
