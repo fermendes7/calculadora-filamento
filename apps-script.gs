@@ -24,6 +24,7 @@ function doPost(e) {
       break;
     }
   }
+  const wasExisting = row >= 0;
   if (data.acao === 'apagar') {
     if (row < 0) return json({ ok: false, action: 'not_found', product: data.nome });
     sheet.deleteRow(row);
@@ -46,7 +47,7 @@ function doPost(e) {
     return value === undefined ? (currentRow[index] || '') : value;
   });
   sheet.getRange(row, 1, 1, output.length).setValues([output]);
-  return json({ action: row <= values.length ? 'updated' : 'added', row: row });
+  return json({ action: wasExisting ? 'updated' : 'added', row: row });
 }
 
 function doGet() {
