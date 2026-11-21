@@ -53,6 +53,7 @@ const fixedFee = document.querySelector('#fixedFee');
 const discountPercent = document.querySelector('#discountPercent');
 
 const money = value => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const moneyPrecise = value => `R$ ${Number(value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 })}`;
 const number = value => value.toLocaleString('pt-BR', { maximumFractionDigits: 1 });
 
 function calculate() {
@@ -83,9 +84,9 @@ function calculatePiece() {
   const energy = power * totalHours * rate * quantity;
   const machine = (Number(machineCostPerHour.value) || 0) * totalHours * quantity;
   breakdownFilament.textContent = money(filament);
-  breakdownEnergy.textContent = money(energy);
+  breakdownEnergy.textContent = moneyPrecise(energy);
   breakdownLabor.textContent = money(labor);
-  pieceMachine.textContent = money(machineCostPerHour.value * totalHours || 0);
+  pieceMachine.textContent = money(machine);
   pieceTotal.textContent = money(filament + energy + labor + machine);
   pieceFormula.textContent = `${money(filament)} + (${number(power)} kW × ${number(hours)} h ${number(minutes)} min × ${money(rate)}) + ${money(labor)} + (${number(hours)} h ${number(minutes)} min × ${money(Number(machineCostPerHour.value) || 0)} máquina)`;
 }

@@ -79,6 +79,8 @@ function doPost(e) {
   const objectColumn = savedHeaders.findIndex(h => normalize(h) === 'objeto') + 1;
   const costColumn = savedHeaders.findIndex(h => normalize(h) === 'custo') + 1;
   if (objectColumn) sheet.getRange(row, objectColumn).setNumberFormat('0');
+  const energyColumn = savedHeaders.findIndex(h => normalize(h) === 'energia') + 1;
+  if (energyColumn) sheet.getRange(row, energyColumn).setNumberFormat('R$ #,##0.0000');
   if (costColumn) {
     const rawCost = sheet.getRange(row, costColumn).getValue();
     const numericCost = typeof rawCost === 'number' ? rawCost : Number(String(rawCost).replace(',', '.'));
@@ -238,6 +240,10 @@ function reorderColumns_(sheet) {
   const packaging = headers.findIndex(h => normalize(h) === 'embalagem') + 1;
   const others = headers.findIndex(h => normalize(h) === 'outroscustostotais') + 1;
   const errorPercent = headers.findIndex(h => normalize(h) === 'custodeerro') + 1;
+  const energyColumn = headers.findIndex(h => normalize(h) === 'energia') + 1;
+  if (energyColumn && sheet.getLastRow() > HEADER_ROW) {
+    sheet.getRange(HEADER_ROW + 1, energyColumn, sheet.getLastRow() - HEADER_ROW, 1).setNumberFormat('R$ #,##0.0000');
+  }
   for (let row = HEADER_ROW + 1; row <= sheet.getLastRow(); row++) {
     if (!custo) continue;
     const rawCost = sheet.getRange(row, custo).getValue();
