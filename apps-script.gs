@@ -80,10 +80,17 @@ function doPost(e) {
   const costColumn = savedHeaders.findIndex(h => normalize(h) === 'custo') + 1;
   if (objectColumn) sheet.getRange(row, objectColumn).setNumberFormat('0');
   if (costColumn) {
-    const costCell = sheet.getRange(row, costColumn).getA1Notation();
+    const rawCost = sheet.getRange(row, costColumn).getValue();
+    const numericCost = typeof rawCost === 'number' ? rawCost : Number(String(rawCost).replace(',', '.'));
     for (const rule of [{ name: 'promocao', factor: 1.5 }, { name: 'parcerias', factor: 1.3 }]) {
       const channelColumn = savedHeaders.findIndex(h => normalize(h) === rule.name) + 1;
-      if (channelColumn) sheet.getRange(row, channelColumn).setFormula(`=${costCell}*${rule.factor}`);
+      if (channelColumn) {
+        if (Number.isFinite(numericCost) && numericCost !== 0) {
+          sheet.getRange(row, channelColumn).setValue(numericCost * rule.factor);
+        } else {
+          sheet.getRange(row, channelColumn).clearContent();
+        }
+      }
     }
   }
   sheet.getRange(row, 1, 1, output.length).setFontWeight('bold');
@@ -204,6 +211,41 @@ function json(value) {
 }
 
 function reorderColumns_(sheet) {
+  // Remove somente a coluna antiga "ESCA.". A nova coluna "ESCALA"
+  // criada pelo usuário deve permanecer e ficar na coluna F.
+  let headers = sheet.getRange(HEADER_ROW, 1, 1, sheet.getLastColumn()).getDisplayValues()[0];
+  for (let i = headers.length - 1; i >= 0; i--) {
+    if (normalize(headers[i]) === 'esca') sheet.deleteColumn(i + 1);
+  }
+  headers = sheet.getRange(HEADER_ROW, 1, 1, sheet.getLastColumn()).getDisplayValues()[0];
+  let escala = headers.findIndex(h => normalize(h) === 'escala') + 1;
+  if (!escala) {
+    // A coluna F já foi criada manualmente pelo usuário; apenas corrige o
+    // cabeçalho sem mover os valores que estão nessa coluna.
+    sheet.getRange(HEADER_ROW, 6).setValue('ESCALA');
+    escala = 6;
+  } else if (escala !== 6) {
+    sheet.moveColumns(sheet.getRange(1, escala, sheet.getMaxRows(), 1), 6);
+  }
+  headers = sheet.getRange(HEADER_ROW, 1, 1, sheet.getLastColumn()).getDisplayValues()[0];
+  const custo = headers.findIndex(h => normalize(h) === 'custo') + 1;
+  const parceria = headers.findIndex(h => normalize(h) === 'parcerias') + 1;
+  const promocao = headers.findIndex(h => normalize(h) === 'promocao') + 1;
+  for (let row = HEADER_ROW + 1; row <= sheet.getLastRow(); row++) {
+    if (!custo) continue;
+    const rawCost = sheet.getRange(row, custo).getValue();
+    const cost = typeof rawCost === 'number' ? rawCost : Number(String(rawCost).replace(',', '.'));
+    if (!Number.isFinite(cost) || cost === 0) {
+      if (parceria) sheet.getRange(row, parceria).clearContent();
+      if (promocao) sheet.getRange(row, promocao).clearContent();
+      continue;
+    }
+    if (parceria) sheet.getRange(row, parceria).setValue(cost * 1.3);
+    if (promocao) sheet.getRange(row, promocao).setValue(cost * 1.5);
+  }
+  SpreadsheetApp.flush();
+  return json({ ok: true, action: 'reordered', escala: 'F', parcerias: 'custo + 30%', promocao: 'custo + 50%' });
+  /*
   // Remove a coluna antiga "ERRO". O percentual já fica em "Custo de erro"
   // e o valor em reais é somado ao custo final, sem uma segunda coluna.
   // A faixa verde da linha 1 tem mesclagens antigas; desfaça somente essa
@@ -237,4 +279,5 @@ function reorderColumns_(sheet) {
   }
   SpreadsheetApp.flush();
   return json({ ok: true, action: 'reordered', lastColumn: sheet.getLastColumn() });
+  */
 }
