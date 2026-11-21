@@ -41,6 +41,8 @@ const productName = document.querySelector('#productName');
 const productLink = document.querySelector('#productLink');
 const fileName = document.querySelector('#fileName');
 const scaleInfo = document.querySelector('#scaleInfo');
+const saveObjectCount = document.querySelector('#saveObjectCount');
+const saveHourlyValue = document.querySelector('#saveHourlyValue');
 const saveStatus = document.querySelector('#saveStatus');
 const saveProductButton = document.querySelector('#saveProduct');
 const deleteProductButton = document.querySelector('#deleteProduct');
@@ -168,6 +170,11 @@ function updateAll() {
   calculate();
   calculateExtra();
   calculateProfit();
+  if (saveObjectCount && objectCount) saveObjectCount.value = objectCount.value || 1;
+  if (saveHourlyValue) {
+    const value = Number(hourlyValue.textContent.replace(/[^0-9,-]/g, '').replace('.', '').replace(',', '.')) || 0;
+    saveHourlyValue.value = value.toFixed(2);
+  }
 }
 
 saveProductButton.addEventListener('click', async () => {
@@ -209,7 +216,7 @@ saveProductButton.addEventListener('click', async () => {
     minutos: Number(printMinutes.value) || 0,
     tempoHoras: adjustedTotalHours,
     tempo: `${String(Math.floor(adjustedTotalHours)).padStart(2, '0')}:${String(Math.round((adjustedTotalHours % 1) * 60)).padStart(2, '0')}:00`,
-    objetos: quantity,
+    objetos: Number(saveObjectCount.value) || quantity,
     tempoPreparacaoMinutos: 0,
     energia: energyValue,
     filamento: filamentValue,

@@ -168,7 +168,7 @@ function valueForHeader(header, data, index) {
     nome: 'nome', produto: 'nome', nomeproduto: 'nome',
     nomedoarquivo: 'nomeArquivo', arquivo: 'nomeArquivo', file: 'nomeArquivo', filename: 'nomeArquivo',
     link: 'link', url: 'link', linkproduto: 'link',
-    gramas: 'gramas', peso: 'gramas', objeto: 'objetos', objetos: 'objetos',
+    gramas: 'gramas', peso: 'gramas', objeto: 'objetos', objetos: 'objetos', qtdmesa: 'objetos',
     preco: 'precoSugerido', precorolo: 'precoRolo', precofilamento: 'precoRolo',
     escala: 'escala', esc: 'escala',
     tempo: 'tempo', horas: 'horas', minutos: 'minutos', tempohoras: 'tempoHoras',
@@ -181,7 +181,7 @@ function valueForHeader(header, data, index) {
     embalagem: 'embalagem', embal: 'embalagem', outroscustos: 'outrosCustos', outroscustostotais: 'outrosCustos', outrocustostotais: 'outrosCustos', frete: 'frete',
     custopeca: 'custoPeca', custototal: 'custoTotal', precosugerido: 'precoSugerido',
     erro: 'erroValor', custoerro: 'custoErroPercentual',
-    valorporhora: 'valorPorHora', lucro: 'lucroDesejado', canal: 'canal',
+    valorporhora: 'valorPorHora', lucroporhora: 'valorPorHora', lucro: 'lucroDesejado', canal: 'canal',
     valor: 'precoSugerido', percentualvenda: 'lucroDesejado', venda: 'lucroDesejado', desconto: 'discountPercent', total: 'precoSugerido'
   };
   const key = aliases[header];
@@ -232,6 +232,33 @@ function reorderColumns_(sheet) {
     escala = 6;
   } else if (escala !== 6) {
     sheet.moveColumns(sheet.getRange(1, escala, sheet.getMaxRows(), 1), 6);
+  }
+  ensureHeader_(sheet, 'QTD MESA');
+  ensureHeader_(sheet, 'LUCRO POR HORA');
+  // Ordem principal da planilha. A coluna A continua sendo a numeração.
+  // Parcerias e Promoção ficam junto do Preço; os campos de cadastro ficam
+  // depois de Escala, antes de Objeto.
+  const desiredOrder = [
+    'produto', 'preco', 'parcerias', 'promocao', 'gramas', 'tempo',
+    'escala', 'qtdmesa', 'lucroporhora', 'objeto', 'maodeobra', 'maquina',
+    'energia', 'embalagem', 'outroscustostotais', 'custodeerro', 'custo',
+    'percentualvenda', 'valor', 'frete', 'vendamkt', 'venda', 'demanda',
+    'nomedoarquivo', 'link'
+  ];
+  let target = 2;
+  for (const wanted of desiredOrder) {
+    headers = sheet.getRange(HEADER_ROW, 1, 1, sheet.getLastColumn()).getDisplayValues()[0];
+    const aliases = wanted === 'qtdmesa' ? ['qtdmesa']
+      : wanted === 'lucroporhora' ? ['lucroporhora', 'valorporhora']
+      : [wanted];
+    let from = 0;
+    for (const alias of aliases) {
+      const found = headers.findIndex((h, i) => i >= 1 && normalize(h) === alias) + 1;
+      if (found) { from = found; break; }
+    }
+    if (!from || from === target) { if (from) target++; continue; }
+    sheet.moveColumns(sheet.getRange(1, from, sheet.getMaxRows(), 1), target);
+    target++;
   }
   headers = sheet.getRange(HEADER_ROW, 1, 1, sheet.getLastColumn()).getDisplayValues()[0];
   const custo = headers.findIndex(h => normalize(h) === 'custo') + 1;

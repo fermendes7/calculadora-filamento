@@ -209,6 +209,14 @@
         Escala (informativa)
         <input id="scaleInfo" type="text" placeholder="Ex.: 100%" value="100%" autocomplete="off" />
       </label>
+      <label>
+        QTD MESA
+        <input id="saveObjectCount" type="number" min="1" step="1" value="1" inputmode="numeric" />
+      </label>
+      <label>
+        Lucro por hora
+        <div class="input-with-prefix"><span>R$</span><input id="saveHourlyValue" type="number" min="0" step="0.01" value="0" inputmode="decimal" readonly /></div>
+      </label>
       </div>
       <p class="save-status" id="saveStatus" aria-live="polite"></p>
       <div class="save-actions">
@@ -217,7 +225,7 @@
       </div>
     </section>
   </main>
-  <script src="script.js?v=59"></script>
+  <script src="script.js?v=60"></script>
 </body>
 </html>
 
