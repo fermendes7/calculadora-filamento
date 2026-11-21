@@ -32,6 +32,8 @@ const profitBaseCost = document.querySelector('#profitBaseCost');
 const profitValue = document.querySelector('#profitValue');
 const salePriceInformed = document.querySelector('#salePriceInformed');
 const profitPerPiece = document.querySelector('#profitPerPiece');
+const partnershipPrice = document.querySelector('#partnershipPrice');
+const promotionPrice = document.querySelector('#promotionPrice');
 const salePriceInput = document.querySelector('#salePriceInput');
 const salePrice = document.querySelector('#salePrice');
 const hourlyValue = document.querySelector('#hourlyValue');
@@ -149,6 +151,10 @@ function calculateProfit() {
   profitValue.textContent = money(fee);
   salePriceInformed.textContent = money(informedSale);
   profitPerPiece.textContent = money(actualProfit);
+  // Valores de referência para os canais, usando o custo total da peça:
+  // Parcerias = custo + 30%; Promoção = custo + 50%.
+  partnershipPrice.textContent = money(baseCost * 1.3);
+  promotionPrice.textContent = money(baseCost * 1.5);
   salePrice.textContent = money(sale);
   hourlyValue.textContent = money(totalPrintHours > 0 ? sale / totalPrintHours : 0);
   desiredProfitSuffix.textContent = pricingMode.value === 'margin' ? '%' : 'R$';
