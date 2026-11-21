@@ -111,6 +111,7 @@ function doPost(e) {
       SpreadsheetApp.newRichTextValue().setText(safeName).setLinkUrl(url).build()
     );
   }
+  applyResponsiveFormulas_(sheet, row);
   if (!data.link && linkColumn) sheet.getRange(row, linkColumn).clearContent();
   SpreadsheetApp.flush();
   return json({ action: wasExisting ? 'updated' : 'added', row: row });
@@ -216,6 +217,44 @@ function json(value) {
   return ContentService.createTextOutput(JSON.stringify(value)).setMimeType(ContentService.MimeType.JSON);
 }
 
+function columnLetter_(column) {
+  let result = '';
+  while (column > 0) {
+    const remainder = (column - 1) % 26;
+    result = String.fromCharCode(65 + remainder) + result;
+    column = Math.floor((column - 1) / 26);
+  }
+  return result;
+}
+
+function applyResponsiveFormulas_(sheet, onlyRow) {
+  const lastColumn = sheet.getLastColumn();
+  const headers = sheet.getRange(HEADER_ROW, 1, 1, lastColumn).getDisplayValues()[0];
+  const col = name => headers.findIndex(h => normalize(h) === name) + 1;
+  const custo = col('custo');
+  const embalagem = col('embalagem');
+  const outros = col('outroscustostotais');
+  const erroPercentual = col('custodeerro');
+  const erroValor = col('erro');
+  const parceria = col('parcerias');
+  const promocao = col('promocao');
+  if (!custo || (!parceria && !promocao)) return;
+  const first = onlyRow || HEADER_ROW + 1;
+  const last = onlyRow || sheet.getLastRow();
+  for (let row = first; row <= last; row++) {
+    const costRef = `${columnLetter_(custo)}${row}`;
+    const packagingRef = embalagem ? `${columnLetter_(embalagem)}${row}` : '0';
+    const othersRef = outros ? `${columnLetter_(outros)}${row}` : '0';
+    const errorRef = erroValor
+      ? `${columnLetter_(erroValor)}${row}`
+      : erroPercentual ? `(${costRef}*${columnLetter_(erroPercentual)}${row}/100)` : '0';
+    const base = `(${costRef}+${packagingRef}+${othersRef}+${errorRef})`;
+    if (parceria) sheet.getRange(row, parceria).setFormula(`=IFERROR(${base}*1.3,0)`);
+    if (promocao) sheet.getRange(row, promocao).setFormula(`=IFERROR(${base}*1.5,0)`);
+  }
+  SpreadsheetApp.flush();
+}
+
 function reorderColumns_(sheet) {
   // Remove somente a coluna antiga "ESCA.". A nova coluna "ESCALA"
   // criada pelo usuário deve permanecer e ficar na coluna F.
@@ -287,6 +326,7 @@ function reorderColumns_(sheet) {
     if (parceria) sheet.getRange(row, parceria).setValue(channelBase * 1.3);
     if (promocao) sheet.getRange(row, promocao).setValue(channelBase * 1.5);
   }
+  applyResponsiveFormulas_(sheet);
   SpreadsheetApp.flush();
   return json({ ok: true, action: 'reordered', escala: 'F', base: 'custo final com custos adicionais', parcerias: 'base + 30%', promocao: 'base + 50%' });
   /*
