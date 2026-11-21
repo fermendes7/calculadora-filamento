@@ -82,11 +82,15 @@ function doPost(e) {
   if (costColumn) {
     const rawCost = sheet.getRange(row, costColumn).getValue();
     const numericCost = typeof rawCost === 'number' ? rawCost : Number(String(rawCost).replace(',', '.'));
+    // Parcerias e Promoção usam o custo final com custos adicionais,
+    // igual à calculadora: custo da peça + embalagem + outros custos + erro.
+    const totalCost = Number(data.custoTotal);
+    const channelBase = Number.isFinite(totalCost) && totalCost !== 0 ? totalCost : numericCost;
     for (const rule of [{ name: 'promocao', factor: 1.5 }, { name: 'parcerias', factor: 1.3 }]) {
       const channelColumn = savedHeaders.findIndex(h => normalize(h) === rule.name) + 1;
       if (channelColumn) {
-        if (Number.isFinite(numericCost) && numericCost !== 0) {
-          sheet.getRange(row, channelColumn).setValue(numericCost * rule.factor);
+        if (Number.isFinite(channelBase) && channelBase !== 0) {
+          sheet.getRange(row, channelColumn).setValue(channelBase * rule.factor);
         } else {
           sheet.getRange(row, channelColumn).clearContent();
         }
@@ -231,20 +235,27 @@ function reorderColumns_(sheet) {
   const custo = headers.findIndex(h => normalize(h) === 'custo') + 1;
   const parceria = headers.findIndex(h => normalize(h) === 'parcerias') + 1;
   const promocao = headers.findIndex(h => normalize(h) === 'promocao') + 1;
+  const packaging = headers.findIndex(h => normalize(h) === 'embalagem') + 1;
+  const others = headers.findIndex(h => normalize(h) === 'outroscustostotais') + 1;
+  const errorPercent = headers.findIndex(h => normalize(h) === 'custodeerro') + 1;
   for (let row = HEADER_ROW + 1; row <= sheet.getLastRow(); row++) {
     if (!custo) continue;
     const rawCost = sheet.getRange(row, custo).getValue();
     const cost = typeof rawCost === 'number' ? rawCost : Number(String(rawCost).replace(',', '.'));
-    if (!Number.isFinite(cost) || cost === 0) {
+    const packagingValue = packaging ? Number(sheet.getRange(row, packaging).getValue()) || 0 : 0;
+    const othersValue = others ? Number(sheet.getRange(row, others).getValue()) || 0 : 0;
+    const errorRate = errorPercent ? Number(sheet.getRange(row, errorPercent).getValue()) || 0 : 0;
+    const channelBase = cost + packagingValue + othersValue + cost * errorRate / 100;
+    if (!Number.isFinite(channelBase) || channelBase === 0) {
       if (parceria) sheet.getRange(row, parceria).clearContent();
       if (promocao) sheet.getRange(row, promocao).clearContent();
       continue;
     }
-    if (parceria) sheet.getRange(row, parceria).setValue(cost * 1.3);
-    if (promocao) sheet.getRange(row, promocao).setValue(cost * 1.5);
+    if (parceria) sheet.getRange(row, parceria).setValue(channelBase * 1.3);
+    if (promocao) sheet.getRange(row, promocao).setValue(channelBase * 1.5);
   }
   SpreadsheetApp.flush();
-  return json({ ok: true, action: 'reordered', escala: 'F', parcerias: 'custo + 30%', promocao: 'custo + 50%' });
+  return json({ ok: true, action: 'reordered', escala: 'F', base: 'custo final com custos adicionais', parcerias: 'base + 30%', promocao: 'base + 50%' });
   /*
   // Remove a coluna antiga "ERRO". O percentual já fica em "Custo de erro"
   // e o valor em reais é somado ao custo final, sem uma segunda coluna.

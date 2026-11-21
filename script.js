@@ -151,12 +151,10 @@ function calculateProfit() {
   profitValue.textContent = money(fee);
   salePriceInformed.textContent = money(informedSale);
   profitPerPiece.textContent = money(actualProfit);
-  // Mantém a mesma base usada na planilha: o Custo total da peça
-  // (filamento + energia + mão de obra + máquina), antes de embalagem,
-  // outros custos e erro.
-  const pieceCostForChannels = pieceCost + machine;
-  partnershipPrice.textContent = money(pieceCostForChannels * 1.3);
-  promotionPrice.textContent = money(pieceCostForChannels * 1.5);
+  // Usa o custo final com custos adicionais como base dos canais.
+  // Ex.: R$ 12,70 -> Parcerias R$ 16,51 e Promoção R$ 19,05.
+  partnershipPrice.textContent = money(baseCost * 1.3);
+  promotionPrice.textContent = money(baseCost * 1.5);
   salePrice.textContent = money(sale);
   hourlyValue.textContent = money(totalPrintHours > 0 ? sale / totalPrintHours : 0);
   desiredProfitSuffix.textContent = pricingMode.value === 'margin' ? '%' : 'R$';
