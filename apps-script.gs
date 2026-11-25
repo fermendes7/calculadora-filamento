@@ -178,7 +178,6 @@ function normalizarEstrutura_(sheet) {
     sourceIndexes.push(idx >= 0 ? idx : -1);
     outHeaders.push(canonical[pos]);
   });
-  for (let i = 0; i < headers.length; i++) if (i >= 0 && !used.has(i) && headers[i]) { outHeaders.push(headers[i]); sourceIndexes.push(i); }
   const rows = all.slice(1).map(row => sourceIndexes.map(i => i >= 0 ? row[i] : ''));
   const width = outHeaders.length;
   sheet.getRange(HEADER_ROW, 1, Math.max(1, lastRow - HEADER_ROW + 1), width).clearContent();
