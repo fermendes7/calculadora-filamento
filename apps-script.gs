@@ -160,22 +160,20 @@ function normalizarEstrutura_(sheet) {
   const headers = all[0].map(h => String(h || '').trim());
   const normalized = headers.map(normalize);
   const wanted = [
-    ['nº','n','numero'], ['produto'], ['preco'], ['parcerias','parceria'],
-    ['promocao'], ['gramas','grama','peso'], ['tempo'], ['escala','esc'],
-    ['qtdmesa','qtd','objetosmesa'], ['valorporhora','rhora','lucroporhora'],
+    ['produto'], ['preco'], ['gramas','grama','peso'], ['tempo'], ['escala','esc','esca'],
     ['objeto','objetos'], ['maodeobra','maoobra'], ['maquina','manutencao'],
     ['energia'], ['embalagem','embal'], ['outroscustostotais','outroscustos','outros'],
-    ['custodeerro','erro'], ['custo','custofinal'], ['valor','precosugerido'],
-    ['frete'], ['percentualvenda','venda','lucrodesejado'], ['desconto'], ['total'],
-    ['arquivo'], ['nomedoarquivo','nomearquivo'], ['link','url']
+    ['custodeerro','erro'], ['custo','custofinal'], ['percentualvenda','venda','lucrodesejado'],
+    ['valor','precosugerido'], ['desconto'], ['frete'],
+    ['nomedoarquivo','nomearquivo','arquivo'], ['link','url']
   ];
   const used = new Set();
   const order = [];
   for (const names of wanted) {
-    const idx = normalized.findIndex((h, i) => !used.has(i) && names.includes(h));
+    const idx = normalized.findIndex((h, i) => i > 0 && !used.has(i) && names.includes(h));
     if (idx >= 0) { used.add(idx); order.push(idx); }
   }
-  for (let i = 0; i < headers.length; i++) if (!used.has(i) && headers[i]) order.push(i);
+  for (let i = 1; i < headers.length; i++) if (!used.has(i) && headers[i]) order.push(i);
   if (!order.length) return json({ ok: false, error: 'Cabeçalhos não encontrados.' });
   const outHeaders = order.map(i => headers[i]);
   const rows = all.slice(1).map(row => order.map(i => row[i]));
@@ -247,11 +245,11 @@ function valueForHeader(header, data, index) {
     preco: 'precoSugerido', precorolo: 'precoRolo', precofilamento: 'precoRolo',
     escala: 'escala', esc: 'escala', escalatempo: 'escala',
     tempo: 'tempo', horas: 'horas', minutos: 'minutos', tempohoras: 'tempoHoras',
-    custo: 'custoPeca', custoobjeto: 'custoPeca',
+    custo: 'custoTotal', custoobjeto: 'custoPeca',
     // A coluna "Custo de erro" da planilha representa a taxa percentual (ex.: 20%).
     // O valor calculado em reais fica na coluna "Erro".
-    custodeerro: 'custoErroPercentual',
-    maodeobra: 'maoDeObra', maoobra: 'maoDeObra', maquina: 'maquinaTotal', manutencao: 'maquinaTotal',
+    custodeerro: 'erroValor',
+    maodeobra: 'maoDeObra', maoobra: 'maoDeObra', maquina: 'maquinaPorHora', manutencao: 'maquinaPorHora',
     montagem: 'outrosCustos', energia: 'energia',
     embalagem: 'embalagem', embal: 'embalagem', outroscustos: 'outrosCustos', outroscustostotais: 'outrosCustos', outrocustostotais: 'outrosCustos', frete: 'frete',
     custopeca: 'custoPeca', custototal: 'custoTotal', precosugerido: 'precoSugerido',
