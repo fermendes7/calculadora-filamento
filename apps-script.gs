@@ -32,6 +32,7 @@ function doPost(e) {
   const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
   if (!sheet) return json({ error: 'Aba PRODUTOS não encontrada.' });
   if (data.acao === 'reordenar') return reorderColumns_(sheet);
+  if (data.acao === 'normalizarEstrutura') return normalizarEstrutura_(sheet);
   if (data.acao === 'corrigirErros') return corrigirErros_(sheet);
   if (data.acao === 'recalcular') {
     applyResponsiveFormulas_(sheet);
@@ -151,6 +152,47 @@ function doGet() {
   return json({ ok: true, message: 'Integração da calculadora ativa.' });
 }
 
+function normalizarEstrutura_(sheet) {
+  const lastRow = sheet.getLastRow();
+  const lastColumn = sheet.getLastColumn();
+  if (lastColumn < 1) return json({ ok: false, error: 'Sem colunas.' });
+  const all = sheet.getRange(HEADER_ROW, 1, Math.max(1, lastRow - HEADER_ROW + 1), lastColumn).getValues();
+  const headers = all[0].map(h => String(h || '').trim());
+  const normalized = headers.map(normalize);
+  const wanted = [
+    ['nº','n','numero'], ['produto'], ['preco'], ['parcerias','parceria'],
+    ['promocao'], ['gramas','grama','peso'], ['tempo'], ['escala','esc'],
+    ['qtdmesa','qtd','objetosmesa'], ['valorporhora','rhora','lucroporhora'],
+    ['objeto','objetos'], ['maodeobra','maoobra'], ['maquina','manutencao'],
+    ['energia'], ['embalagem','embal'], ['outroscustostotais','outroscustos','outros'],
+    ['custodeerro','erro'], ['custo','custofinal'], ['valor','precosugerido'],
+    ['frete'], ['percentualvenda','venda','lucrodesejado'], ['desconto'], ['total'],
+    ['arquivo'], ['nomedoarquivo','nomearquivo'], ['link','url']
+  ];
+  const used = new Set();
+  const order = [];
+  for (const names of wanted) {
+    const idx = normalized.findIndex((h, i) => !used.has(i) && names.includes(h));
+    if (idx >= 0) { used.add(idx); order.push(idx); }
+  }
+  for (let i = 0; i < headers.length; i++) if (!used.has(i) && headers[i]) order.push(i);
+  if (!order.length) return json({ ok: false, error: 'Cabeçalhos não encontrados.' });
+  const outHeaders = order.map(i => headers[i]);
+  const rows = all.slice(1).map(row => order.map(i => row[i]));
+  const width = outHeaders.length;
+  sheet.getRange(HEADER_ROW, 1, Math.max(1, lastRow - HEADER_ROW + 1), width).clearContent();
+  sheet.getRange(HEADER_ROW, 1, 1, width).setValues([outHeaders]);
+  if (rows.length) sheet.getRange(HEADER_ROW + 1, 1, rows.length, width).setValues(rows);
+  const productCol = outHeaders.findIndex(h => normalize(h) === 'produto') + 1;
+  if (productCol && rows.length) {
+    const productValues = sheet.getRange(HEADER_ROW + 1, productCol, rows.length, 1).getValues();
+    sheet.getRange(HEADER_ROW + 1, productCol, rows.length, 1).setValues(productValues.map(r => [String(r[0] || '').toUpperCase()]));
+  }
+  applyResponsiveFormulas_(sheet, HEADER_ROW + 1, Math.max(HEADER_ROW + 1, lastRow));
+  SpreadsheetApp.flush();
+  return json({ ok: true, action: 'normalized', columns: outHeaders });
+}
+
 function corrigirErros_(sheet) {
   const lastRow = sheet.getLastRow();
   const lastColumn = sheet.getLastColumn();
@@ -197,6 +239,8 @@ function findColumn(headers, names) {
 function valueForHeader(header, data, index) {
   const aliases = {
     nome: 'nome', produto: 'nome', nomeproduto: 'nome',
+    parcerias: 'parcerias', parceria: 'parcerias',
+    promocao: 'promocao', promocao: 'promocao',
     nomedoarquivo: 'nomeArquivo', arquivo: 'nomeArquivo', file: 'nomeArquivo', filename: 'nomeArquivo',
     link: 'link', url: 'link', linkproduto: 'link',
     gramas: 'gramas', peso: 'gramas', objeto: 'objetos', objetos: 'objetos', qtd: 'objetos', qtdmesa: 'objetos',
