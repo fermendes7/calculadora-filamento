@@ -2,6 +2,28 @@ const SHEET_NAME = 'PRODUTOS';
 const SPREADSHEET_ID = '1EBM7_ac7XW0DI5IXg8p_VdiFZxjBshEvG3nFQeqmj-c';
 const HEADER_ROW = 2;
 
+// Recalcula os preços derivados quando qualquer custo é alterado diretamente
+// na aba PRODUTOS.
+function onEdit(e) {
+  if (!e || !e.range) return;
+  const sheet = e.range.getSheet();
+  if (sheet.getName() !== SHEET_NAME) return;
+  const firstRow = Math.max(e.range.getRow(), HEADER_ROW + 1);
+  const lastRow = e.range.getLastRow();
+  if (firstRow <= lastRow) applyResponsiveFormulas_(sheet, firstRow, lastRow);
+}
+
+function configurarGatilho() {
+  ScriptApp.getProjectTriggers()
+    .filter(trigger => trigger.getHandlerFunction() === 'onEdit')
+    .forEach(trigger => ScriptApp.deleteTrigger(trigger));
+  ScriptApp.newTrigger('onEdit')
+    .forSpreadsheet(SPREADSHEET_ID)
+    .onEdit()
+    .create();
+  return 'Gatilho instalado';
+}
+
 function doPost(e) {
   const raw = e.parameter && e.parameter.payload
     ? e.parameter.payload
@@ -11,6 +33,11 @@ function doPost(e) {
   if (!sheet) return json({ error: 'Aba PRODUTOS não encontrada.' });
   if (data.acao === 'reordenar') return reorderColumns_(sheet);
   if (data.acao === 'corrigirErros') return corrigirErros_(sheet);
+  if (data.acao === 'recalcular') {
+    applyResponsiveFormulas_(sheet);
+    SpreadsheetApp.flush();
+    return json({ ok: true, action: 'recalculated' });
+  }
 
   let lastColumn = Math.max(sheet.getLastColumn(), 1);
   let headers = sheet.getRange(HEADER_ROW, 1, 1, lastColumn).getValues()[0];
@@ -39,13 +66,16 @@ function doPost(e) {
   // Na planilha atual o cabeçalho está na linha 2 e o produto fica na coluna B.
   // O fallback precisa ser 2 para nunca gravar o nome na coluna Nº (A).
   const nameColumn = 2;
+  // Padroniza o produto na planilha: a coluna B sempre recebe maiúsculas.
+  const normalizedProductName = String(data.nome || '').trim().toUpperCase();
+  const normalizedData = Object.assign({}, data, { nome: normalizedProductName });
   const values = sheet.getDataRange().getDisplayValues();
   const formulas = sheet.getDataRange().getFormulas();
   let row = -1;
   for (let i = HEADER_ROW; i < values.length; i++) {
     const displayName = normalize(values[i][nameColumn - 1]);
     const formulaName = normalize(formulas[i][nameColumn - 1]);
-    if (displayName === normalize(data.nome) || formulaName.includes(normalize(data.nome))) {
+    if (displayName === normalize(normalizedProductName) || formulaName.includes(normalize(normalizedProductName))) {
       row = i + 1;
       break;
     }
@@ -69,7 +99,7 @@ function doPost(e) {
     : [];
 
   const output = headers.map((header, index) => {
-    const value = valueForHeader(normalize(header), data, index);
+    const value = valueForHeader(normalize(header), normalizedData, index);
     return value === undefined ? (currentRow[index] || '') : value;
   });
   // A coluna A é a numeração correspondente à posição do produto na coluna B.
@@ -102,7 +132,7 @@ function doPost(e) {
   sheet.getRange(row, 1, 1, output.length).setFontWeight('bold');
   if (data.link) {
     const url = String(data.link).trim();
-    const safeName = String(data.nome).trim();
+    const safeName = normalizedProductName;
     // Grava o URL também na coluna LINK e o nome como rich text em B.
     // Isso torna o salvamento idempotente: tanto produto novo quanto existente
     // recebem/atualizam o link sempre.
@@ -169,9 +199,9 @@ function valueForHeader(header, data, index) {
     nome: 'nome', produto: 'nome', nomeproduto: 'nome',
     nomedoarquivo: 'nomeArquivo', arquivo: 'nomeArquivo', file: 'nomeArquivo', filename: 'nomeArquivo',
     link: 'link', url: 'link', linkproduto: 'link',
-    gramas: 'gramas', peso: 'gramas', objeto: 'objetos', objetos: 'objetos', qtdmesa: 'objetos',
+    gramas: 'gramas', peso: 'gramas', objeto: 'objetos', objetos: 'objetos', qtd: 'objetos', qtdmesa: 'objetos',
     preco: 'precoSugerido', precorolo: 'precoRolo', precofilamento: 'precoRolo',
-    escala: 'escala', esc: 'escala',
+    escala: 'escala', esc: 'escala', escalatempo: 'escala',
     tempo: 'tempo', horas: 'horas', minutos: 'minutos', tempohoras: 'tempoHoras',
     custo: 'custoPeca', custoobjeto: 'custoPeca',
     // A coluna "Custo de erro" da planilha representa a taxa percentual (ex.: 20%).
@@ -182,11 +212,24 @@ function valueForHeader(header, data, index) {
     embalagem: 'embalagem', embal: 'embalagem', outroscustos: 'outrosCustos', outroscustostotais: 'outrosCustos', outrocustostotais: 'outrosCustos', frete: 'frete',
     custopeca: 'custoPeca', custototal: 'custoTotal', precosugerido: 'precoSugerido',
     erro: 'erroValor', custoerro: 'custoErroPercentual',
-    valorporhora: 'valorPorHora', lucroporhora: 'valorPorHora', lucro: 'lucroDesejado', canal: 'canal',
+    valorporhora: 'valorPorHora', lucroporhora: 'valorPorHora', rhora: 'valorPorHora',
+    valorhora: 'valorPorHora', lucro: 'lucroDesejado', canal: 'canal',
     valor: 'precoSugerido', percentualvenda: 'lucroDesejado', venda: 'lucroDesejado', desconto: 'discountPercent', total: 'precoSugerido'
   };
   const key = aliases[header];
-  if (key) return data[key] ?? '';
+  if (key) {
+    // Percentuais são armazenados como fração para a formatação da planilha:
+    // 20 -> 0,20 (20%) e 150 -> 1,50 (150%).
+    if (key === 'custoErroPercentual' || key === 'lucroDesejado') {
+      const percent = Number(data[key]);
+      return Number.isFinite(percent) ? percent / 100 : '';
+    }
+    if (key === 'escala') {
+      const escala = Number(data[key]);
+      return Number.isFinite(escala) ? escala / 100 : '';
+    }
+    return data[key] ?? '';
+  }
   // Colunas repetidas da planilha antiga: preserva os valores existentes
   // quando não há um cabeçalho específico para o campo.
   if (header === 'preco' && index === 2) return data.precoSugerido ?? '';
@@ -227,7 +270,7 @@ function columnLetter_(column) {
   return result;
 }
 
-function applyResponsiveFormulas_(sheet, onlyRow) {
+function applyResponsiveFormulas_(sheet, onlyRow, onlyLastRow) {
   const lastColumn = sheet.getLastColumn();
   const headers = sheet.getRange(HEADER_ROW, 1, 1, lastColumn).getDisplayValues()[0];
   const col = name => headers.findIndex(h => normalize(h) === name) + 1;
@@ -240,17 +283,22 @@ function applyResponsiveFormulas_(sheet, onlyRow) {
   const promocao = col('promocao');
   if (!custo || (!parceria && !promocao)) return;
   const first = onlyRow || HEADER_ROW + 1;
-  const last = onlyRow || sheet.getLastRow();
+  const last = onlyLastRow || onlyRow || sheet.getLastRow();
   for (let row = first; row <= last; row++) {
     const costRef = `${columnLetter_(custo)}${row}`;
     const packagingRef = embalagem ? `${columnLetter_(embalagem)}${row}` : '0';
     const othersRef = outros ? `${columnLetter_(outros)}${row}` : '0';
-    const errorRef = erroValor
-      ? `${columnLetter_(erroValor)}${row}`
-      : erroPercentual ? `(${costRef}*${columnLetter_(erroPercentual)}${row}/100)` : '0';
+    // Custo de erro é uma porcentagem. Não use a antiga coluna "Erro" em
+    // reais, pois ela fazia as fórmulas herdadas quebrarem.
+    const errorRef = erroPercentual
+      ? `(${costRef}*${columnLetter_(erroPercentual)}${row})` : '0';
     const base = `(${costRef}+${packagingRef}+${othersRef}+${errorRef})`;
-    if (parceria) sheet.getRange(row, parceria).setFormula(`=IFERROR(${base}*1.3,0)`);
-    if (promocao) sheet.getRange(row, promocao).setFormula(`=IFERROR(${base}*1.5,0)`);
+    // A planilha está em pt-BR: use ; como separador e frações inteiras
+    // para não depender de ponto/vírgula decimal.
+    // Fórmula sem IFERROR/SEERRO: o Sheets em pt-BR rejeita IFERROR em
+    // algumas linhas quando a fórmula é escrita pelo Apps Script.
+    if (parceria) sheet.getRange(row, parceria).setFormula(`=${base}*13/10`);
+    if (promocao) sheet.getRange(row, promocao).setFormula(`=${base}*15/10`);
   }
   SpreadsheetApp.flush();
 }
