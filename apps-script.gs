@@ -258,7 +258,10 @@ function valueForHeader(header, data, index) {
     // A coluna "Custo de erro" da planilha representa a taxa percentual (ex.: 20%).
     // O valor calculado em reais fica na coluna "Erro".
     custodeerro: 'erroValor',
-    maodeobra: 'maoDeObra', maoobra: 'maoDeObra', maquina: 'maquinaPorHora', manutencao: 'maquinaPorHora',
+    maodeobra: 'maoDeObra', maoobra: 'maoDeObra',
+    // A coluna MÁQUINA deve receber o total calculado pela calculadora
+    // (Máquina/manutenção), e não apenas a tarifa por hora informada.
+    maquina: 'maquinaTotal', manutencao: 'maquinaTotal',
     montagem: 'outrosCustos', energia: 'energia',
     embalagem: 'embalagem', embal: 'embalagem', outroscustos: 'outrosCustos', outroscustostotais: 'outrosCustos', outrocustostotais: 'outrosCustos', frete: 'frete',
     custopeca: 'custoPeca', custototal: 'custoTotal', precosugerido: 'precoSugerido',
@@ -326,10 +329,6 @@ function applyResponsiveFormulas_(sheet, onlyRow, onlyLastRow) {
   const headers = sheet.getRange(HEADER_ROW, 1, 1, lastColumn).getDisplayValues()[0];
   const col = name => headers.findIndex(h => normalize(h) === name) + 1;
   const custo = col('custo');
-  const embalagem = col('embalagem');
-  const outros = col('outroscustostotais');
-  const erroPercentual = col('custodeerro');
-  const erroValor = col('erro');
   const parceria = col('parcerias');
   const promocao = col('promocao');
   if (!custo || (!parceria && !promocao)) return;
@@ -337,13 +336,10 @@ function applyResponsiveFormulas_(sheet, onlyRow, onlyLastRow) {
   const last = onlyLastRow || onlyRow || sheet.getLastRow();
   for (let row = first; row <= last; row++) {
     const costRef = `${columnLetter_(custo)}${row}`;
-    const packagingRef = embalagem ? `${columnLetter_(embalagem)}${row}` : '0';
-    const othersRef = outros ? `${columnLetter_(outros)}${row}` : '0';
-    // Custo de erro é uma porcentagem. Não use a antiga coluna "Erro" em
-    // reais, pois ela fazia as fórmulas herdadas quebrarem.
-    const errorRef = erroPercentual
-      ? `(${costRef}*${columnLetter_(erroPercentual)}${row})` : '0';
-    const base = `(${costRef}+${packagingRef}+${othersRef}+${errorRef})`;
+    // CUSTO já é o "Preço final com custos adicionais" da calculadora.
+    // Não some embalagem, outros custos ou erro novamente: isso duplicava
+    // os valores e fazia Parcerias/Promoção divergirem da calculadora.
+    const base = costRef;
     // A planilha está em pt-BR: use ; como separador e frações inteiras
     // para não depender de ponto/vírgula decimal.
     // Fórmula sem IFERROR/SEERRO: o Sheets em pt-BR rejeita IFERROR em
