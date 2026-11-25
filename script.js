@@ -209,7 +209,9 @@ saveProductButton.addEventListener('click', async () => {
     nome: name,
     link: productLink.value.trim(),
     nomeArquivo: fileName.value.trim(),
-    escala: scaleInfo.value.trim(),
+    // A planilha formata ESCALA como percentual; envie 100% como 1,
+    // 65% como 0,65, evitando 10000% ou 6500%.
+    escala: (Number(scaleInfo.value.replace('%', '').replace(',', '.')) || 0) / 100,
     gramas: (Number(usedWeight.value) || 0) * quantity,
     precoRolo: Number(price.value) || 0,
     horas: Number(printHours.value) || 0,
