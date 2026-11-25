@@ -169,14 +169,17 @@ function normalizarEstrutura_(sheet) {
   ];
   const used = new Set();
   const order = [];
-  for (const names of wanted) {
-    const idx = normalized.findIndex((h, i) => i > 0 && !used.has(i) && names.includes(h));
-    if (idx >= 0) { used.add(idx); order.push(idx); }
-  }
-  for (let i = 1; i < headers.length; i++) if (!used.has(i) && headers[i]) order.push(i);
-  if (!order.length) return json({ ok: false, error: 'Cabeçalhos não encontrados.' });
-  const outHeaders = order.map(i => headers[i]);
-  const rows = all.slice(1).map(row => order.map(i => row[i]));
+  const canonical = ['PRODUTO','PREÇO','GRAMAS','TEMPO','ESCA.','OBJETO','MÃO DE OBRA','MÁQUINA','ENERGIA','EMBALAGEM','OUTROS CUSTOS TOTAIS','CUSTO DE ERRO','CUSTO','% VENDA','VALOR','DESCONTO','FRETE','NOME DO ARQUIVO','LINK'];
+  const outHeaders = [];
+  const sourceIndexes = [];
+  wanted.forEach((names, pos) => {
+    const idx = normalized.findIndex((h, i) => !used.has(i) && names.includes(h));
+    used.add(idx);
+    sourceIndexes.push(idx >= 0 ? idx : -1);
+    outHeaders.push(canonical[pos]);
+  });
+  for (let i = 0; i < headers.length; i++) if (i >= 0 && !used.has(i) && headers[i]) { outHeaders.push(headers[i]); sourceIndexes.push(i); }
+  const rows = all.slice(1).map(row => sourceIndexes.map(i => i >= 0 ? row[i] : ''));
   const width = outHeaders.length;
   sheet.getRange(HEADER_ROW, 1, Math.max(1, lastRow - HEADER_ROW + 1), width).clearContent();
   sheet.getRange(HEADER_ROW, 1, 1, width).setValues([outHeaders]);
