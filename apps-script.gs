@@ -160,16 +160,16 @@ function normalizarEstrutura_(sheet) {
   const headers = all[0].map(h => String(h || '').trim());
   const normalized = headers.map(normalize);
   const wanted = [
-    ['produto'], ['preco'], ['gramas','grama','peso'], ['tempo'], ['escala','esc','esca'],
-    ['objeto','objetos'], ['maodeobra','maoobra'], ['maquina','manutencao'],
-    ['energia'], ['embalagem','embal'], ['outroscustostotais','outroscustos','outros'],
-    ['custodeerro','erro'], ['custo','custofinal'], ['percentualvenda','venda','lucrodesejado'],
-    ['valor','precosugerido'], ['desconto'], ['frete'],
-    ['nomedoarquivo','nomearquivo','arquivo'], ['link','url']
+    ['produto'], ['preco'], ['parcerias','parceria'], ['promocao'], ['lucroporhora','valorporhora','rhora'],
+    ['gramas','grama','peso'], ['tempo'], ['escala','esc','esca'], ['objeto','objetos'],
+    ['maodeobra','maoobra'], ['maquina','manutencao'], ['energia'], ['embalagem','embal'],
+    ['outroscustostotais','outroscustos','outros'], ['custodeerro','erro'], ['custo','custofinal'],
+    ['percentualvenda','venda','lucrodesejado'], ['qtdmesa','qtd'], ['valor','precosugerido'],
+    ['desconto'], ['frete'], ['nomedoarquivo','nomearquivo','arquivo'], ['link','url']
   ];
   const used = new Set();
   const order = [];
-  const canonical = ['PRODUTO','PREÇO','GRAMAS','TEMPO','ESCA.','OBJETO','MÃO DE OBRA','MÁQUINA','ENERGIA','EMBALAGEM','OUTROS CUSTOS TOTAIS','CUSTO DE ERRO','CUSTO','% VENDA','VALOR','DESCONTO','FRETE','NOME DO ARQUIVO','LINK'];
+  const canonical = ['PRODUTO','PREÇO','PARCERIAS','PROMOÇÃO','LUCRO POR HORA','GRAMAS','TEMPO','ESCA.','OBJETO','MÃO DE OBRA','MÁQUINA','ENERGIA','EMBALAGEM','OUTROS CUSTOS TOTAIS','CUSTO DE ERRO','CUSTO','% VENDA','QTD MESA','VALOR','DESCONTO','FRETE','NOME DO ARQUIVO','LINK'];
   const outHeaders = [];
   const sourceIndexes = [];
   wanted.forEach((names, pos) => {
@@ -183,6 +183,13 @@ function normalizarEstrutura_(sheet) {
   sheet.getRange(HEADER_ROW, 1, Math.max(1, lastRow - HEADER_ROW + 1), width).clearContent();
   sheet.getRange(HEADER_ROW, 1, 1, width).setValues([outHeaders]);
   if (rows.length) sheet.getRange(HEADER_ROW + 1, 1, rows.length, width).setValues(rows);
+  const dataStart = HEADER_ROW + 1;
+  const dataRows = Math.max(1, lastRow - HEADER_ROW);
+  const fmt = (label, pattern) => { const col = outHeaders.findIndex(h => normalize(h) === normalize(label)) + 1; if (col) sheet.getRange(dataStart, col, dataRows, 1).setNumberFormat(pattern); };
+  ['PREÇO','PARCERIAS','PROMOÇÃO','LUCRO POR HORA','MÃO DE OBRA','MÁQUINA','ENERGIA','EMBALAGEM','OUTROS CUSTOS TOTAIS','CUSTO DE ERRO','CUSTO','VALOR','FRETE'].forEach(h => fmt(h, 'R$ #,##0.00'));
+  ['GRAMAS','OBJETO','QTD MESA'].forEach(h => fmt(h, '0.00'));
+  fmt('TEMPO', '[h]:mm:ss');
+  ['ESCA.','% VENDA','DESCONTO'].forEach(h => fmt(h, '0%'));
   const productCol = outHeaders.findIndex(h => normalize(h) === 'produto') + 1;
   if (productCol && rows.length) {
     const productValues = sheet.getRange(HEADER_ROW + 1, productCol, rows.length, 1).getValues();
