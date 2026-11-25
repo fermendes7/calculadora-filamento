@@ -252,7 +252,7 @@ function valueForHeader(header, data, index) {
     link: 'link', url: 'link', linkproduto: 'link',
     gramas: 'gramas', peso: 'gramas', objeto: 'objetos', objetos: 'objetos', qtd: 'objetos', qtdmesa: 'objetos',
     preco: 'precoSugerido', precorolo: 'precoRolo', precofilamento: 'precoRolo',
-    escala: 'escala', esc: 'escala', escalatempo: 'escala',
+    escala: 'escala', esc: 'escala', esca: 'escala', escalatempo: 'escala',
     tempo: 'tempo', horas: 'horas', minutos: 'minutos', tempohoras: 'tempoHoras',
     custo: 'custoTotal', custoobjeto: 'custoPeca',
     // A coluna "Custo de erro" da planilha representa a taxa percentual (ex.: 20%).
@@ -263,7 +263,7 @@ function valueForHeader(header, data, index) {
     embalagem: 'embalagem', embal: 'embalagem', outroscustos: 'outrosCustos', outroscustostotais: 'outrosCustos', outrocustostotais: 'outrosCustos', frete: 'frete',
     custopeca: 'custoPeca', custototal: 'custoTotal', precosugerido: 'precoSugerido',
     erro: 'erroValor', custoerro: 'custoErroPercentual',
-    valorporhora: 'valorPorHora', lucroporhora: 'valorPorHora', rhora: 'valorPorHora',
+    valorporhora: 'valorPorHora', lucroporhora: 'valorPorHora', lucroporh: 'valorPorHora', rhora: 'valorPorHora',
     valorhora: 'valorPorHora', lucro: 'lucroDesejado', canal: 'canal',
     valor: 'precoSugerido', percentualvenda: 'lucroDesejado', venda: 'lucroDesejado', desconto: 'discountPercent', total: 'precoSugerido'
   };

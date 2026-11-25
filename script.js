@@ -48,7 +48,7 @@ const saveProductButton = document.querySelector('#saveProduct');
 const deleteProductButton = document.querySelector('#deleteProduct');
 
 // Cole aqui a URL do Web App do Google Apps Script ligado à planilha.
-const SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxKKIsBqxkXm2VJ4ujfrpmsN2qmjTGTNQINHCM3P0M7hlh51n3-6iQeCAX9uOSi1hqB/exec';
+const SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwzfyrXZ2_wqZVkAGbukQ8FgFUaTzX--L6zXKN0CtlUZhu0o6h_rwo7mNIolakf0aBs/exec';
 const profitFormula = document.querySelector('#profitFormula');
 const shippingCost = document.querySelector('#shippingCost');
 const fixedFee = document.querySelector('#fixedFee');
@@ -211,7 +211,7 @@ saveProductButton.addEventListener('click', async () => {
     nomeArquivo: fileName.value.trim(),
     // A planilha formata ESCALA como percentual; envie 100% como 1,
     // 65% como 0,65, evitando 10000% ou 6500%.
-    escala: (Number(scaleInfo.value.replace('%', '').replace(',', '.')) || 0) / 100,
+    escala: Number(scaleInfo.value.replace('%', '').replace(',', '.')) || 0,
     gramas: (Number(usedWeight.value) || 0) * quantity,
     precoRolo: Number(price.value) || 0,
     horas: Number(printHours.value) || 0,
@@ -237,6 +237,7 @@ saveProductButton.addEventListener('click', async () => {
     precoSugerido: Number(salePrice.textContent.replace(/[^0-9,-]/g, '').replace('.', '').replace(',', '.')) || 0,
     valorPorHora: Number(hourlyValue.textContent.replace(/[^0-9,-]/g, '').replace('.', '').replace(',', '.')) || 0,
     lucroDesejado: Number(desiredProfit.value) || 0,
+    discountPercent: Number(discountPercent.value) || 0,
     canal: priceType.value
   };
   saveProductButton.disabled = true;
