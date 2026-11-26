@@ -32,6 +32,7 @@ function doPost(e) {
   const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
   if (!sheet) return json({ error: 'Aba PRODUTOS não encontrada.' });
   if (data.acao === 'reordenar') return reorderColumns_(sheet);
+  if (data.acao === 'normalizarEstrutura') return normalizarEstrutura_(sheet);
   if (data.acao === 'corrigirErros') return corrigirErros_(sheet);
   if (data.acao === 'recalcular') {
     applyResponsiveFormulas_(sheet);
@@ -151,6 +152,54 @@ function doGet() {
   return json({ ok: true, message: 'Integração da calculadora ativa.' });
 }
 
+function normalizarEstrutura_(sheet) {
+  const lastRow = sheet.getLastRow();
+  const lastColumn = sheet.getLastColumn();
+  if (lastColumn < 1) return json({ ok: false, error: 'Sem colunas.' });
+  const all = sheet.getRange(HEADER_ROW, 1, Math.max(1, lastRow - HEADER_ROW + 1), lastColumn).getValues();
+  const headers = all[0].map(h => String(h || '').trim());
+  const normalized = headers.map(normalize);
+  const wanted = [
+    ['produto'], ['preco'], ['parcerias','parceria'], ['promocao'], ['lucroporhora','valorporhora','rhora'],
+    ['gramas','grama','peso'], ['tempo'], ['escala','esc','esca'], ['objeto','objetos'],
+    ['maodeobra','maoobra'], ['maquina','manutencao'], ['energia'], ['embalagem','embal'],
+    ['outroscustostotais','outroscustos','outros'], ['custodeerro','erro'], ['custo','custofinal'],
+    ['qtdmesa','qtd'], ['valor','precosugerido','custosadd'],
+    ['desconto'], ['frete'], ['nomedoarquivo','nomearquivo','arquivo'], ['link','url']
+  ];
+  const used = new Set();
+  const order = [];
+  const canonical = ['PRODUTO','PREÇO','PARCERIAS','PROMOÇÃO','LUCRO POR HORA','GRAMAS','TEMPO','ESCA.','OBJETO','MÃO DE OBRA','MÁQUINA','ENERGIA','EMBALAGEM','OUTROS CUSTOS TOTAIS','CUSTO DE ERRO','CUSTO','QTD MESA','CUSTOS + ADD','DESCONTO','FRETE','NOME DO ARQUIVO','LINK'];
+  const outHeaders = [];
+  const sourceIndexes = [];
+  wanted.forEach((names, pos) => {
+    const idx = normalized.findIndex((h, i) => !used.has(i) && names.includes(h));
+    used.add(idx);
+    sourceIndexes.push(idx >= 0 ? idx : -1);
+    outHeaders.push(canonical[pos]);
+  });
+  const rows = all.slice(1).map(row => sourceIndexes.map(i => i >= 0 ? row[i] : ''));
+  const width = outHeaders.length;
+  sheet.getRange(HEADER_ROW, 1, Math.max(1, lastRow - HEADER_ROW + 1), width).clearContent();
+  sheet.getRange(HEADER_ROW, 1, 1, width).setValues([outHeaders]);
+  if (rows.length) sheet.getRange(HEADER_ROW + 1, 1, rows.length, width).setValues(rows);
+  const dataStart = HEADER_ROW + 1;
+  const dataRows = Math.max(1, lastRow - HEADER_ROW);
+  const fmt = (label, pattern) => { const col = outHeaders.findIndex(h => normalize(h) === normalize(label)) + 1; if (col) sheet.getRange(dataStart, col, dataRows, 1).setNumberFormat(pattern); };
+  ['PREÇO','PARCERIAS','PROMOÇÃO','LUCRO POR HORA','MÃO DE OBRA','MÁQUINA','ENERGIA','EMBALAGEM','OUTROS CUSTOS TOTAIS','CUSTO DE ERRO','CUSTO','VALOR','FRETE'].forEach(h => fmt(h, 'R$ #,##0.00'));
+  ['GRAMAS','OBJETO','QTD MESA'].forEach(h => fmt(h, '0.00'));
+  fmt('TEMPO', '[h]:mm:ss');
+  ['ESCA.','% VENDA','DESCONTO'].forEach(h => fmt(h, '0%'));
+  const productCol = outHeaders.findIndex(h => normalize(h) === 'produto') + 1;
+  if (productCol && rows.length) {
+    const productValues = sheet.getRange(HEADER_ROW + 1, productCol, rows.length, 1).getValues();
+    sheet.getRange(HEADER_ROW + 1, productCol, rows.length, 1).setValues(productValues.map(r => [String(r[0] || '').toUpperCase()]));
+  }
+  applyResponsiveFormulas_(sheet, HEADER_ROW + 1, Math.max(HEADER_ROW + 1, lastRow));
+  SpreadsheetApp.flush();
+  return json({ ok: true, action: 'normalized', columns: outHeaders });
+}
+
 function corrigirErros_(sheet) {
   const lastRow = sheet.getLastRow();
   const lastColumn = sheet.getLastColumn();
@@ -197,24 +246,32 @@ function findColumn(headers, names) {
 function valueForHeader(header, data, index) {
   const aliases = {
     nome: 'nome', produto: 'nome', nomeproduto: 'nome',
+    parcerias: 'parcerias', parceria: 'parcerias',
+    promocao: 'promocao', promocao: 'promocao',
     nomedoarquivo: 'nomeArquivo', arquivo: 'nomeArquivo', file: 'nomeArquivo', filename: 'nomeArquivo',
     link: 'link', url: 'link', linkproduto: 'link',
     gramas: 'gramas', peso: 'gramas', objeto: 'objetos', objetos: 'objetos', qtd: 'objetos', qtdmesa: 'objetos',
     preco: 'precoSugerido', precorolo: 'precoRolo', precofilamento: 'precoRolo',
-    escala: 'escala', esc: 'escala', escalatempo: 'escala',
+    escala: 'escala', esc: 'escala', esca: 'escala', escalatempo: 'escala',
     tempo: 'tempo', horas: 'horas', minutos: 'minutos', tempohoras: 'tempoHoras',
-    custo: 'custoPeca', custoobjeto: 'custoPeca',
+    custo: 'custoTotal', custoobjeto: 'custoPeca',
     // A coluna "Custo de erro" da planilha representa a taxa percentual (ex.: 20%).
     // O valor calculado em reais fica na coluna "Erro".
-    custodeerro: 'custoErroPercentual',
-    maodeobra: 'maoDeObra', maoobra: 'maoDeObra', maquina: 'maquinaTotal', manutencao: 'maquinaTotal',
+    // A coluna exibida como ERRO % recebe a taxa, não o valor em reais.
+    custodeerro: 'custoErroPercentual', erropercentual: 'custoErroPercentual',
+    maodeobra: 'maoDeObra', maoobra: 'maoDeObra',
+    // A coluna MÁQUINA deve receber o total calculado pela calculadora
+    // (Máquina/manutenção), e não apenas a tarifa por hora informada.
+    maquina: 'maquinaTotal', manutencao: 'maquinaTotal',
     montagem: 'outrosCustos', energia: 'energia',
     embalagem: 'embalagem', embal: 'embalagem', outroscustos: 'outrosCustos', outroscustostotais: 'outrosCustos', outrocustostotais: 'outrosCustos', frete: 'frete',
     custopeca: 'custoPeca', custototal: 'custoTotal', precosugerido: 'precoSugerido',
-    erro: 'erroValor', custoerro: 'custoErroPercentual',
-    valorporhora: 'valorPorHora', lucroporhora: 'valorPorHora', rhora: 'valorPorHora',
+    // O cabeçalho ERRO % recebe a taxa percentual da calculadora.
+    // Nunca usar erroValor aqui, pois ele é o custo em reais e viraria 56%.
+    erro: 'custoErroPercentual', erropercentual: 'custoErroPercentual', custoerro: 'custoErroPercentual',
+    valorporhora: 'valorPorHora', lucroporhora: 'valorPorHora', lucroporh: 'valorPorHora', rhora: 'valorPorHora',
     valorhora: 'valorPorHora', lucro: 'lucroDesejado', canal: 'canal',
-    valor: 'precoSugerido', percentualvenda: 'lucroDesejado', venda: 'lucroDesejado', desconto: 'discountPercent', total: 'precoSugerido'
+    valor: 'precoSugerido', custosadd: 'custoTotal', percentualvenda: 'lucroDesejado', venda: 'lucroDesejado', desconto: 'discountPercent', total: 'precoSugerido'
   };
   const key = aliases[header];
   if (key) {
@@ -275,30 +332,46 @@ function applyResponsiveFormulas_(sheet, onlyRow, onlyLastRow) {
   const headers = sheet.getRange(HEADER_ROW, 1, 1, lastColumn).getDisplayValues()[0];
   const col = name => headers.findIndex(h => normalize(h) === name) + 1;
   const custo = col('custo');
-  const embalagem = col('embalagem');
-  const outros = col('outroscustostotais');
-  const erroPercentual = col('custodeerro');
-  const erroValor = col('erro');
   const parceria = col('parcerias');
   const promocao = col('promocao');
-  if (!custo || (!parceria && !promocao)) return;
+  const escala = col('escala') || col('escalaproduto');
+  const erro = col('custodeerro') || col('erro');
+  const venda = 0;
+  const preco = col('preco');
+  const tempo = col('tempo');
+  const hora = col('lucroporhora') || col('valorporhora') || col('rhora');
   const first = onlyRow || HEADER_ROW + 1;
   const last = onlyLastRow || onlyRow || sheet.getLastRow();
   for (let row = first; row <= last; row++) {
-    const costRef = `${columnLetter_(custo)}${row}`;
-    const packagingRef = embalagem ? `${columnLetter_(embalagem)}${row}` : '0';
-    const othersRef = outros ? `${columnLetter_(outros)}${row}` : '0';
-    // Custo de erro é uma porcentagem. Não use a antiga coluna "Erro" em
-    // reais, pois ela fazia as fórmulas herdadas quebrarem.
-    const errorRef = erroPercentual
-      ? `(${costRef}*${columnLetter_(erroPercentual)}${row})` : '0';
-    const base = `(${costRef}+${packagingRef}+${othersRef}+${errorRef})`;
-    // A planilha está em pt-BR: use ; como separador e frações inteiras
-    // para não depender de ponto/vírgula decimal.
-    // Fórmula sem IFERROR/SEERRO: o Sheets em pt-BR rejeita IFERROR em
-    // algumas linhas quando a fórmula é escrita pelo Apps Script.
-    if (parceria) sheet.getRange(row, parceria).setFormula(`=${base}*13/10`);
-    if (promocao) sheet.getRange(row, promocao).setFormula(`=${base}*15/10`);
+    if (!String(sheet.getRange(row, 2).getDisplayValue()).trim()) continue;
+    if (escala) {
+      let v = Number(sheet.getRange(row, escala).getValue());
+      if (!Number.isFinite(v) || v < 0.5) v = 1;
+      else if (v > 1) v /= 100;
+      sheet.getRange(row, escala).setValue(v).setNumberFormat('0%');
+    }
+    if (erro) {
+      let v = Number(sheet.getRange(row, erro).getValue());
+      // Preserve o valor recebido da calculadora. Só aplica 20% quando a
+      // célula está realmente vazia ou inválida.
+      if (!Number.isFinite(v) || v < 0) v = 0.2;
+      else if (v > 1) v /= 100;
+      sheet.getRange(row, erro).setValue(v).setNumberFormat('0%');
+    }
+    if (venda) {
+      let v = Number(sheet.getRange(row, venda).getValue());
+      if (!Number.isFinite(v) || v <= 0) v = 1.5;
+      else if (v > 3) v /= 100;
+      sheet.getRange(row, venda).setValue(v).setNumberFormat('0%');
+    }
+    if (custo) {
+      const base = `${columnLetter_(custo)}${row}`;
+      if (parceria) sheet.getRange(row, parceria).setFormula(`=${base}*13/10`);
+      if (promocao) sheet.getRange(row, promocao).setFormula(`=${base}*15/10`);
+    }
+    if (preco && tempo && hora) {
+      sheet.getRange(row, hora).setFormula(`=IFERROR(${columnLetter_(preco)}${row}/(${columnLetter_(tempo)}${row}*24),0)`);
+    }
   }
   SpreadsheetApp.flush();
 }
@@ -307,6 +380,12 @@ function reorderColumns_(sheet) {
   // Remove somente a coluna antiga "ESCA.". A nova coluna "ESCALA"
   // criada pelo usuário deve permanecer e ficar na coluna F.
   let headers = sheet.getRange(HEADER_ROW, 1, 1, sheet.getLastColumn()).getDisplayValues()[0];
+  // Remove a coluna antiga "VENDA". A coluna correta permanece como
+  // "% VENDA" / "PERCENTUAL VENDA".
+  for (let i = headers.length - 1; i >= 0; i--) {
+    if (['venda', 'percentualvenda'].includes(normalize(headers[i]))) sheet.deleteColumn(i + 1);
+  }
+  headers = sheet.getRange(HEADER_ROW, 1, 1, sheet.getLastColumn()).getDisplayValues()[0];
   for (let i = headers.length - 1; i >= 0; i--) {
     if (normalize(headers[i]) === 'esca') sheet.deleteColumn(i + 1);
   }
@@ -329,7 +408,7 @@ function reorderColumns_(sheet) {
     'produto', 'preco', 'parcerias', 'promocao', 'gramas', 'tempo',
     'escala', 'qtdmesa', 'lucroporhora', 'objeto', 'maodeobra', 'maquina',
     'energia', 'embalagem', 'outroscustostotais', 'custodeerro', 'custo',
-    'percentualvenda', 'valor', 'frete', 'vendamkt', 'venda', 'demanda',
+    'custosadd', 'frete', 'vendamkt', 'demanda',
     'nomedoarquivo', 'link'
   ];
   let target = 2;
@@ -348,31 +427,14 @@ function reorderColumns_(sheet) {
     target++;
   }
   headers = sheet.getRange(HEADER_ROW, 1, 1, sheet.getLastColumn()).getDisplayValues()[0];
+  const valueColumn = headers.findIndex(h => ['valor', 'custosadd'].includes(normalize(h))) + 1;
+  if (valueColumn) sheet.getRange(HEADER_ROW, valueColumn).setValue('CUSTOS + ADD');
   const custo = headers.findIndex(h => normalize(h) === 'custo') + 1;
   const parceria = headers.findIndex(h => normalize(h) === 'parcerias') + 1;
   const promocao = headers.findIndex(h => normalize(h) === 'promocao') + 1;
-  const packaging = headers.findIndex(h => normalize(h) === 'embalagem') + 1;
-  const others = headers.findIndex(h => normalize(h) === 'outroscustostotais') + 1;
-  const errorPercent = headers.findIndex(h => normalize(h) === 'custodeerro') + 1;
   const energyColumn = headers.findIndex(h => normalize(h) === 'energia') + 1;
   if (energyColumn && sheet.getLastRow() > HEADER_ROW) {
     sheet.getRange(HEADER_ROW + 1, energyColumn, sheet.getLastRow() - HEADER_ROW, 1).setNumberFormat('R$ #,##0.0000');
-  }
-  for (let row = HEADER_ROW + 1; row <= sheet.getLastRow(); row++) {
-    if (!custo) continue;
-    const rawCost = sheet.getRange(row, custo).getValue();
-    const cost = typeof rawCost === 'number' ? rawCost : Number(String(rawCost).replace(',', '.'));
-    const packagingValue = packaging ? Number(sheet.getRange(row, packaging).getValue()) || 0 : 0;
-    const othersValue = others ? Number(sheet.getRange(row, others).getValue()) || 0 : 0;
-    const errorRate = errorPercent ? Number(sheet.getRange(row, errorPercent).getValue()) || 0 : 0;
-    const channelBase = cost + packagingValue + othersValue + cost * errorRate / 100;
-    if (!Number.isFinite(channelBase) || channelBase === 0) {
-      if (parceria) sheet.getRange(row, parceria).clearContent();
-      if (promocao) sheet.getRange(row, promocao).clearContent();
-      continue;
-    }
-    if (parceria) sheet.getRange(row, parceria).setValue(channelBase * 1.3);
-    if (promocao) sheet.getRange(row, promocao).setValue(channelBase * 1.5);
   }
   applyResponsiveFormulas_(sheet);
   SpreadsheetApp.flush();
